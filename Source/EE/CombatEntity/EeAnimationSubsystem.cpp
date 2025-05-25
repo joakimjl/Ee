@@ -20,6 +20,7 @@ void UEeAnimationSubsystem::Deinitialize()
 {
 	// In here you can unhook from delegates
 	// ie: FExample::OnFireDelegate.Remove(OnFireHandle);
+	AnimationTimingMap.Empty();
 	Super::Deinitialize();
 }
 
