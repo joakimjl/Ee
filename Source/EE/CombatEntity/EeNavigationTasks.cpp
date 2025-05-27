@@ -13,6 +13,7 @@
 
 #include "MassAIBehaviorTypes.h"
 
+#define EE_SPAWNABLE  ECC_GameTraceChannel2
 
 FEeFindRandomLocationInRadius::FEeFindRandomLocationInRadius()
 {
@@ -48,7 +49,7 @@ EStateTreeRunStatus FEeFindRandomLocationInRadius::EnterState(FStateTreeExecutio
 	FHitResult OutHit = FHitResult();
 
 	if (!World->IsNavigationRebuilt()) return EStateTreeRunStatus::Running;
-	bool Res = World->LineTraceSingleByChannel(OutHit,TargetLocation + FVector::UpVector*1000.f, TargetLocation + FVector::UpVector*-1000.f, ECollisionChannel::ECC_Visibility);
+	bool Res = World->LineTraceSingleByChannel(OutHit,TargetLocation + FVector::UpVector*1000.f, TargetLocation + FVector::UpVector*-1000.f, EE_SPAWNABLE);
 	if (!Res) return EStateTreeRunStatus::Running;
 	
 	WalkToLocation.EndOfPathPosition = OutHit.Location;
@@ -78,7 +79,7 @@ EStateTreeRunStatus FEeFindRandomLocationInRadius::Tick(FStateTreeExecutionConte
 	FHitResult OutHit = FHitResult();
 
 	if (!World->IsNavigationRebuilt()) return EStateTreeRunStatus::Running;
-	bool Res = World->LineTraceSingleByChannel(OutHit,TargetLocation + FVector::UpVector*1000.f, TargetLocation + FVector::UpVector*-1000.f, ECollisionChannel::ECC_Visibility);
+	bool Res = World->LineTraceSingleByChannel(OutHit,TargetLocation + FVector::UpVector*1000.f, TargetLocation + FVector::UpVector*-1000.f, ECC_GameTraceChannel2);
 	if (!Res) return EStateTreeRunStatus::Running;
 	
 	WalkToLocation.EndOfPathPosition = OutHit.Location;

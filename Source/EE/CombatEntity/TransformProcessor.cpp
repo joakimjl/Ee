@@ -12,6 +12,8 @@
 #include "Quaternion.h"
 #include "Math/UnrealMathUtility.h"
 
+#define EE_SPAWNABLE  ECC_GameTraceChannel2
+
 
 UTransformProcessor::UTransformProcessor()
 	: EntityQuery(*this)
@@ -45,7 +47,7 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 			FMassMoveTargetFragment& MoveTargetFrag = MoveTargetArr[EntityIt];
 			FVector Loc = MutableTransform.GetLocation();
 			FHitResult OutHit = FHitResult();
-			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*50.f, Loc + FVector::UpVector*-50.f, ECollisionChannel::ECC_Visibility);
+			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*150.f, Loc + FVector::UpVector*-150.f, EE_SPAWNABLE);
 			if (Res)
 			{
 				FVector Up = OutHit.ImpactNormal;
@@ -59,7 +61,7 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 				FQuat SmoothedRotation = FQuat::Slerp(MutableTransform.GetRotation(), RotationQuat, Alpha);
 				SmoothedRotation.Normalize();
 
-				float SmoothedHeight = FMath::Lerp(MutableTransform.GetLocation().Z,OutHit.ImpactPoint.Z,Alpha);
+				float SmoothedHeight = FMath::Lerp(MutableTransform.GetLocation().Z,OutHit.ImpactPoint.Z,Alpha*1.5f);
 				FVector SmoothedLocation = FVector(MutableTransform.GetLocation().X, MutableTransform.GetLocation().Y, SmoothedHeight);
 
 				MutableTransform.SetRotation(SmoothedRotation);
