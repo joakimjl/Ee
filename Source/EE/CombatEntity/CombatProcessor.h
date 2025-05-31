@@ -25,3 +25,20 @@ class EE_API UCombatProcessor : public UMassProcessor
 		FMassEntityQuery EntityQuery;
 };
 
+UCLASS()
+class EE_API UProjectileProcessor : public UMassProcessor
+{
+	GENERATED_BODY()
+
+	public:
+		
+		UProjectileProcessor();
+
+	protected:
+		virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager) override;
+		virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
+
+	private:
+		FMassEntityQuery EntityQuery;
+};
+
