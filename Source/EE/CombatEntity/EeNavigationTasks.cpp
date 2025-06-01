@@ -64,10 +64,6 @@ EStateTreeRunStatus FEeFindRandomLocationInRadius::EnterState(FStateTreeExecutio
 
 EStateTreeRunStatus FEeFindRandomLocationInRadius::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	// TODO: Add per-frame logic or check for completion
-
-	//const UWorld* World = Context.GetWorld();
-
 	const UWorld* World = Context.GetWorld();
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	const float Radius = InstanceData.RadiusToCheck;

@@ -17,7 +17,7 @@ void UEeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	
 	Super::Initialize(Collection);
 	
-	EntityHandleGrid = TMap<int32, TMap<int32, TArray<FMassEntityHandle>>>();
+	EntityHandleGrid = TMap<int32, FEntityHandleGridCellY>();
 	EeEntityManager = &GetWorld()->GetSubsystem<UMassEntitySubsystem>()->GetMutableEntityManager();
 
 	// In here you can hook to delegates!
@@ -45,9 +45,9 @@ FVector UEeSubsystem::MoveSelfInGrid(FMassEntityHandle Handle, FVector PreviousL
 	FIntVector2 GridVec = VectorToGrid(PreviousLocation);
 	if (EntityHandleGrid.Contains(GridVec.X))
 	{
-		if (EntityHandleGrid[GridVec.X].Contains(GridVec.Y))
+		if (EntityHandleGrid[GridVec.X].InnerMap.Contains(GridVec.Y))
 		{
-			if (EntityHandleGrid[GridVec.X][GridVec.Y].Contains(Handle)) EntityHandleGrid[GridVec.X][GridVec.Y].Remove(Handle);
+			if (EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Contains(Handle)) EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Remove(Handle);
 		}
 	}
 	FVector NewLocation = AddSelfToGrid(Handle);
@@ -62,9 +62,9 @@ FVector UEeSubsystem::AddSelfToGrid(FMassEntityHandle Handle)
 	FIntVector2 GridVec = VectorToGrid(Location);
 	if (EntityHandleGrid.Contains(GridVec.X))
 	{
-		if (EntityHandleGrid[GridVec.X].Contains(GridVec.Y))
+		if (EntityHandleGrid[GridVec.X].InnerMap.Contains(GridVec.Y))
 		{
-			if (EntityHandleGrid[GridVec.X][GridVec.Y].Contains(Handle)) EntityHandleGrid[GridVec.X][GridVec.Y].Add(Handle);
+			if (EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Contains(Handle)) EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Add(Handle);
 		}
 	}
 	return Location;
@@ -75,7 +75,7 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
 {
 	TArray<FMassEntityHandle> EntitiesProjectiles;
 	const UScriptStruct* FragmentTypes[] = { FTransformFragment::StaticStruct(), FProjectileParams::StaticStruct(), FProjectileFragment::StaticStruct() };
-	const FMassArchetypeHandle ArchetypeHandle = EeEntityManager->CreateArchetype(MakeArrayView(&FragmentTypes[1], 1));
+	const FMassArchetypeHandle ArchetypeHandle = EeEntityManager->CreateArchetype(MakeArrayView(FragmentTypes, 3));
 	EeEntityManager->BatchCreateEntities(ArchetypeHandle, 1, EntitiesProjectiles);
 
 	return true;

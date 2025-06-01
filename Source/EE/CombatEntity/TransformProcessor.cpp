@@ -36,7 +36,7 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 
 	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
 	{
-		
+		//TODO implement check for how far up target is vs self, only then trace.
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
 		const TArrayView<FMassMoveTargetFragment> MoveTargetArr = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
@@ -47,6 +47,7 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 			FMassMoveTargetFragment& MoveTargetFrag = MoveTargetArr[EntityIt];
 			FVector Loc = MutableTransform.GetLocation();
 			FHitResult OutHit = FHitResult();
+			if (MoveTargetFrag.DistanceToGoal <= 500.f) continue;
 			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*150.f, Loc + FVector::UpVector*-150.f, EE_SPAWNABLE);
 			if (Res)
 			{

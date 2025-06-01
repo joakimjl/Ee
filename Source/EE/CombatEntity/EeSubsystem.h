@@ -4,13 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "MassEntityTemplateRegistry.h"
+
 #include "EeSubsystem.generated.h"
 
-struct FMassEntityManager;
 struct FMassEntityHandle;
-/**
- * 
- */
+struct FMassEntityManager;
+
+USTRUCT(BlueprintType)
+struct FGridCellData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FMassEntityHandle> Handles;
+};
+
+USTRUCT(BlueprintType)
+struct FEntityHandleGridCellY
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<int32, FGridCellData> InnerMap;
+};
+
 UCLASS()
 class EE_API UEeSubsystem : public UWorldSubsystem
 {
@@ -28,7 +46,7 @@ public:
 
 	
 	//Spawning Projectiles Functions
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	bool SpawnProjectile(FMassEntityHandle Handle);
 
 protected:
@@ -36,14 +54,13 @@ protected:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 	// UWorldSubsystem end interface
+
+	FMassEntityManager* EeEntityManager;
 	
 private:
 	UE_MT_DECLARE_RW_ACCESS_DETECTOR(AccessDetector);
 	UPROPERTY()
-	TMap<int32, TMap<int32, TArray<FMassEntityHandle>>> EntityHandleGrid;
-	UPROPERTY()
-	FMassEntityManager* EeEntityManager;
-	
+	TMap<int32, FEntityHandleGridCellY> EntityHandleGrid;
 };
 
 template<>
