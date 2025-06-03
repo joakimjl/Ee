@@ -43,7 +43,10 @@ public:
 	FVector AddSelfToGrid(FMassEntityHandle Handle);
 	UFUNCTION(BlueprintCallable)
 	FIntVector2 VectorToGrid(FVector Vec);
-
+	UFUNCTION()
+	TArray<FMassEntityHandle> EntitesAround(FIntVector2 InGrid, int32 SizeAround);
+	UFUNCTION(BlueprintCallable)
+	bool AttackLocation(FVector InLocation, int32 Team);
 	
 	//Spawning Projectiles Functions
 	UFUNCTION()

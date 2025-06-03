@@ -70,6 +70,42 @@ FVector UEeSubsystem::AddSelfToGrid(FMassEntityHandle Handle)
 	return Location;
 }
 
+TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 SizeAround)
+{
+	TArray<FMassEntityHandle> Out;
+	for (int32 i = 0; i < SizeAround; i++)
+	{
+		for (int32 j = 0; j < SizeAround; j++)
+		{
+		TArray<FMassEntityHandle>& Temp = EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
+		for each (FMassEntityHandle Handle in Temp)
+		{
+			if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
+		}
+		Out.Append(EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
+		}
+	}
+
+	return Out;
+}
+
+bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Team)
+{
+	FIntVector2 GridLoc = VectorToGrid(InLocation);
+	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, 1);
+
+	for (auto AttackTarget : AttackTargets)
+	{
+		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
+		if (EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget))
+		{
+			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,20.f));
+		}
+	}
+	
+	return true;
+}
+
 
 bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
 {

@@ -3,6 +3,7 @@
 #include "TransformProcessor.h"
 
 #include "CombatFragments.h"
+#include "EeSubsystem.h"
 #include "EulerTransform.h"
 #include "MassCommandBuffer.h"
 #include "MassExecutionContext.h"
@@ -35,8 +36,9 @@ void UTransformProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&
 void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
 
-	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
+	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime, EeSubsystem](FMassExecutionContext& Context)
 	{
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
@@ -49,32 +51,34 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 			FTransformDistChecker& DistChecker = DistCheckers[EntityIt];
 			FMassMoveTargetFragment& MoveTargetFrag = MoveTargetArr[EntityIt];
 			FVector Loc = MutableTransform.GetLocation();
-			//if (MoveTargetFrag.Center.Z - Loc.Z <= 45.f) continue;
+			if (abs(MoveTargetFrag.Center.Z - Loc.Z) >= 5.f) DistChecker.FullyLerped = true;
 			//if (MoveTargetFrag.DistanceToGoal <= 100.f) continue;
 			DistChecker.DistSinceZCheck = (DistChecker.LastLocation - Loc).Size();
-			if (DistChecker.DistSinceZCheck <= 500.f) continue;
+			//if (DistChecker.DistSinceZCheck <= 100.f) continue;
 			FHitResult OutHit = FHitResult();
 
-			float Alpha = 0.08f;
+			float Alpha = 2.55f*DeltaTime;
 			
 			if (!DistChecker.FullyLerped)
 			{
 				FQuat SmoothedRotation = FQuat::Slerp(MutableTransform.GetRotation(), DistChecker.TargetRotation, Alpha);
 				SmoothedRotation.Normalize();
 
-				float SmoothedHeight = FMath::Lerp(MutableTransform.GetLocation().Z, DistChecker.TargetHeight,Alpha*1.5f);
+				float SmoothedHeight = FMath::Lerp(MutableTransform.GetLocation().Z, DistChecker.TargetHeight,Alpha);
 				FVector SmoothedLocation = FVector(MutableTransform.GetLocation().X, MutableTransform.GetLocation().Y, SmoothedHeight);
 
 				MutableTransform.SetRotation(SmoothedRotation);
 				MutableTransform.SetLocation(SmoothedLocation);
-				//If abs of z and abs of smoothedLocationZ is +-5
-				if (MutableTransform.GetLocation().Z < DistChecker.TargetHeight + 0.5f || MutableTransform.GetLocation().Z > DistChecker.TargetHeight - 0.5f)
+				//If abs of z and abs of smoothedLocationZ is +-0.5
+				if ((MutableTransform.GetLocation().Z < DistChecker.TargetHeight + 0.5f
+					|| MutableTransform.GetLocation().Z > DistChecker.TargetHeight - 0.5f)
+					&& SmoothedRotation.AngularDistance(DistChecker.TargetRotation) <= 0.01)
 				{
 					DistChecker.FullyLerped = true;
 				}
 				continue;
 			}
-			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*150.f, Loc + FVector::UpVector*-150.f, EE_SPAWNABLE);
+			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*250.f, Loc + FVector::UpVector*-250.f, EE_SPAWNABLE);
 			if (Res)
 			{
 				FVector Up = OutHit.ImpactNormal;
@@ -96,6 +100,9 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 				MutableTransform.SetRotation(SmoothedRotation);
 				MutableTransform.SetLocation(SmoothedLocation);
 				DistChecker.DistSinceLocMark = 0;
+				const FVector NewLast = EeSubsystem->MoveSelfInGrid(
+					Context.GetEntity(EntityIt),DistChecker.LastLocation);
+				DistChecker.LastLocation = NewLast;
 				DistChecker.DistSinceZCheck = 0;
 			}
 		}
