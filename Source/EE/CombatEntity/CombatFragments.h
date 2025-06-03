@@ -141,6 +141,28 @@ struct FOffensiveStatsBase : public FMassFragment
 };
 
 USTRUCT()
+struct FTeamFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	uint32 Team = -1;
+};
+
+USTRUCT()
+struct FTransformDistChecker : public FMassFragment
+{
+	GENERATED_BODY()
+
+	float DistSinceLocMark = 999999.f;
+	FVector LastLocation = FVector::ZeroVector;
+	bool FullyLerped = true;
+	float TargetHeight = 0.f;
+	FQuat TargetRotation = FQuat::Identity;
+
+	float DistSinceZCheck = 999999.f;
+};
+
+USTRUCT()
 struct FProjectileFragment : public FMassFragment
 {
 	GENERATED_BODY()
@@ -149,7 +171,7 @@ struct FProjectileFragment : public FMassFragment
 };
 
 USTRUCT()
-struct FProjectileParams : public FMassSharedFragment
+struct FProjectileParams : public FMassConstSharedFragment
 {
 	GENERATED_BODY();
 
@@ -168,6 +190,12 @@ struct FProjectileParams : public FMassSharedFragment
 	FVector InitialDirection = FVector::ZeroVector;
 
 	
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	EDamageType DamageType = EDamageType::Physical;
+
+	/* Projectile Instanced Static Mesh */
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	UInstancedStaticMeshComponent* ProjectileMeshComponent = nullptr;
 };
 
 

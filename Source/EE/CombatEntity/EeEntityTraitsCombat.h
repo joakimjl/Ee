@@ -18,3 +18,32 @@ public:
 
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };
+
+UCLASS()
+class UEeEntityTrait : public UMassEntityTraitBase
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(EditAnywhere, Category="Ee")
+    int32 InTeam;
+
+    virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
+};
+
+UCLASS()
+class UProjectileTrait : public UMassEntityTraitBase
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(EditAnywhere, Category="Ee")
+    int32 InTeam;
+
+    UPROPERTY(EditAnywhere, Category="Ee")
+    FProjectileParams ProjectileParams;
+    
+    virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
+};

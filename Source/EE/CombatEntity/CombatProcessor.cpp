@@ -2,6 +2,7 @@
 
 #include "CombatProcessor.h"
 
+#include "CombatFragments.h"
 #include "MassCommandBuffer.h"
 #include "MassExecutionContext.h"
 #include "MassMovementFragments.h"
@@ -55,8 +56,8 @@ UProjectileProcessor::UProjectileProcessor()
 
 void UProjectileProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
-	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddConstSharedRequirement<FProjectileParams>(EMassFragmentPresence::All);
+	EntityQuery.AddRequirement<FProjectileFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 }
 
@@ -68,8 +69,8 @@ void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecu
 	{
 		
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
-		const TArrayView<FMassMoveTargetFragment> MoveTargetFragArr = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
-		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
+		const TArrayView<FProjectileFragment> ProjectileFragments = Context.GetMutableFragmentView<FProjectileFragment>();
+		const FProjectileParams ProjectileParams = Context.GetConstSharedFragment<FProjectileParams>();
 
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{

@@ -35,8 +35,8 @@ void UEeSubsystem::Deinitialize()
 FIntVector2 UEeSubsystem::VectorToGrid(FVector Vector)
 {
 	FIntVector2 Out;
-	Out.X = FMath::FloorToInt(Vector.X);
-	Out.Y = FMath::FloorToInt(Vector.Y);
+	Out.X = FMath::FloorToInt(Vector.X/200);
+	Out.Y = FMath::FloorToInt(Vector.Y/200);
 	return Out;
 }
 

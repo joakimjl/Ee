@@ -9,7 +9,7 @@
 void UDefensiveEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
     BuildContext.RequireFragment<FTransformFragment>();
-    BuildContext.RequireFragment<FDefenceStatsBase>();
+    BuildContext.AddFragment<FDefenceStatsBase>();
     BuildContext.AddFragment<FCombatFragment>();
 
     FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
@@ -17,4 +17,28 @@ void UDefensiveEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& Build
     const FDefenceStatsParams SharedDefenceParams = DefenceStatsParams.GetValidated();
     const FConstSharedStruct& SharedDefenceParamsFragment = MassEntityManager.GetOrCreateConstSharedFragment(SharedDefenceParams);
     BuildContext.AddConstSharedFragment(SharedDefenceParamsFragment);
+}
+
+void UEeEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
+{
+    FTeamFragment& TeamFrag = BuildContext.AddFragment_GetRef<FTeamFragment>();
+    TeamFrag.Team = InTeam;
+    
+    BuildContext.AddFragment<FTransformDistChecker>();
+    BuildContext.RequireFragment<FTransformFragment>();
+}
+
+void UProjectileTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
+{
+    FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
+    
+    const FProjectileParams InsideProjectileParams = ProjectileParams.GetValidated();
+    const FConstSharedStruct& SharedProjectileParamsFragment = MassEntityManager.GetOrCreateConstSharedFragment(InsideProjectileParams);
+    BuildContext.AddConstSharedFragment(SharedProjectileParamsFragment);
+
+    BuildContext.AddFragment<FProjectileFragment>();
+    FTeamFragment& TeamFrag = BuildContext.AddFragment_GetRef<FTeamFragment>();
+    TeamFrag.Team = InTeam;
+    
+    BuildContext.RequireFragment<FTransformFragment>();
 }
