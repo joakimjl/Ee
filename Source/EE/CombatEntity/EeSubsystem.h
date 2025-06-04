@@ -79,6 +79,6 @@ struct TMassExternalSubsystemTraits<UEeSubsystem> final
 	{
 		ThreadSafeRead = true,
 		ThreadSafeWrite = false,
-		GameThreadOnly = false
+		GameThreadOnly = true
 	};
 };

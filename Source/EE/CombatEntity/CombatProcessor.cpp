@@ -72,17 +72,65 @@ void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecu
 	{
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		TArrayView<FProjectileFragment> ProjectileFragArr = Context.GetMutableFragmentView<FProjectileFragment>();
-		FProjectileVis& ProjectileVisIn = Context.GetMutableSharedFragment<FProjectileVis>();
-		const FProjectileParams& ProjectileParams = Context.GetConstSharedFragment<FProjectileParams>();
+		
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
 			FTransform& MutableTransform = TransformFragArr[EntityIt].GetMutableTransform();
 			FProjectileFragment& ProjectileFrag = ProjectileFragArr[EntityIt];
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*ProjectileFrag.Velocity);
-			//UE_LOG(LogTemp, Warning, TEXT("ProjectileFrag.Velocity: %s"), *ProjectileFrag.Velocity.ToString());
 		}
 	});
 }
+
+UProjectileInstanceUpdateProcessor::UProjectileInstanceUpdateProcessor()
+	: EntityQuery(*this)
+{
+	bRequiresGameThreadExecution = true;
+	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
+	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::Avoidance;
+	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
+
+}
+
+void UProjectileInstanceUpdateProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
+{
+	EntityQuery.AddSharedRequirement<FProjectileVis>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddTagRequirement<FProjectileTag>(EMassFragmentPresence::All);
+}
+
+void UProjectileInstanceUpdateProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("ProjectileInstanceUpdate"));
+	int32 CurNum = 0;
+	int32* NumPtr = &CurNum;
+
+	EntityQuery.ForEachEntityChunk(Context, [this, NumPtr](FMassExecutionContext& Context)
+	{
+		FProjectileVis& ProjectileVis = Context.GetMutableSharedFragment<FProjectileVis>();
+		TConstArrayView<FTransformFragment> TransformFragArr = Context.GetFragmentView<FTransformFragment>();
+        
+		//if (!ProjectileVis.ProjectileMeshComponent || !ProjectileVis.ProjectileMeshComponent->IsValidLowLevel())
+		//{
+		//	return;
+		//}
+
+		TArray<FTransform> Transforms = TArray<FTransform>();
+		Transforms.Reserve(Context.GetNumEntities());
+
+		for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+		{
+			Transforms.Add(TransformFragArr[EntityIndex].GetTransform());
+		}
+
+		if (Transforms.Num() > 0)
+		{
+			ProjectileVis.ProjectileMeshComponent->BatchUpdateInstancesTransforms(*NumPtr, Transforms, true, true, true);
+		}
+		*NumPtr += Context.GetNumEntities();
+	});
+}
+
 
 UDeathPhysicsProcessor::UDeathPhysicsProcessor()
 	: EntityQuery(*this)
@@ -105,7 +153,6 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 
 	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
 	{
-		
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		const TArrayView<FMassMoveTargetFragment> MoveTargetFragArr = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
 		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();

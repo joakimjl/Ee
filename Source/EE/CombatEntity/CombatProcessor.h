@@ -43,6 +43,23 @@ class EE_API UProjectileProcessor : public UMassProcessor
 };
 
 UCLASS()
+class UProjectileInstanceUpdateProcessor : public UMassProcessor
+{
+	GENERATED_BODY()
+
+public:
+	UProjectileInstanceUpdateProcessor();
+
+protected:
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager) override;
+	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
+
+private:
+	FMassEntityQuery EntityQuery;
+};
+
+
+UCLASS()
 class EE_API UDeathPhysicsProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
