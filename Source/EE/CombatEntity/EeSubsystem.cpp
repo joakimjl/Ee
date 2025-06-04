@@ -78,7 +78,7 @@ TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 
 		for (int32 j = 0; j < SizeAround; j++)
 		{
 		TArray<FMassEntityHandle>& Temp = EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
-		for each (FMassEntityHandle Handle in Temp)
+		for (FMassEntityHandle Handle : Temp)
 		{
 			if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
 		}
