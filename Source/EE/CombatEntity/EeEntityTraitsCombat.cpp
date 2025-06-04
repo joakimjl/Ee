@@ -36,6 +36,10 @@ void UProjectileTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildConte
     const FConstSharedStruct& SharedProjectileParamsFragment = MassEntityManager.GetOrCreateConstSharedFragment(InsideProjectileParams);
     BuildContext.AddConstSharedFragment(SharedProjectileParamsFragment);
 
+    const FProjectileVis ProjectileVisIn = ProjectileVis;
+    const FSharedStruct& SharedProjectileVisFragment = MassEntityManager.GetOrCreateSharedFragment(ProjectileVisIn);
+    BuildContext.AddSharedFragment(SharedProjectileVisFragment);
+
     BuildContext.AddFragment<FProjectileFragment>();
     FTeamFragment& TeamFrag = BuildContext.AddFragment_GetRef<FTeamFragment>();
     TeamFrag.Team = InTeam;

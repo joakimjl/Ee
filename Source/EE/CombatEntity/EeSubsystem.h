@@ -52,6 +52,9 @@ public:
 	UFUNCTION()
 	bool SpawnProjectile(FMassEntityHandle Handle);
 
+	UPROPERTY()
+	TArray<UInstancedStaticMeshComponent*> ProjectileMeshComponents;
+
 protected:
 	// UWorldSubsystem begin interface
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -59,6 +62,7 @@ protected:
 	// UWorldSubsystem end interface
 
 	FMassEntityManager* EeEntityManager;
+	UE::Mass::FEntityBuilder* EntityBuilder;
 	
 private:
 	UE_MT_DECLARE_RW_ACCESS_DETECTOR(AccessDetector);

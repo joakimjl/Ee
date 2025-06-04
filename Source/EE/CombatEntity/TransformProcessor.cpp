@@ -11,6 +11,7 @@
 #include "MassCommonFragments.h"
 #include "MassCommonTypes.h"
 #include "MassNavigationFragments.h"
+#include "MassQueryExecutor.h"
 #include "Quaternion.h"
 #include "Math/UnrealMathUtility.h"
 

@@ -45,5 +45,8 @@ public:
     UPROPERTY(EditAnywhere, Category="Ee")
     FProjectileParams ProjectileParams;
     
+    UPROPERTY(EditAnywhere, Category="Ee")
+    FProjectileVis ProjectileVis;
+    
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };

@@ -170,6 +170,7 @@ struct FProjectileFragment : public FMassFragment
 	FVector Velocity = FVector::ZeroVector;
 };
 
+
 USTRUCT()
 struct FProjectileParams : public FMassConstSharedFragment
 {
@@ -192,10 +193,27 @@ struct FProjectileParams : public FMassConstSharedFragment
 	
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	EDamageType DamageType = EDamageType::Physical;
+};
+
+USTRUCT()
+struct FProjectileVis : public FMassSharedFragment
+{
+	GENERATED_BODY();
 
 	/* Projectile Instanced Static Mesh */
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	UInstancedStaticMeshComponent* ProjectileMeshComponent = nullptr;
+
+	//Mesh SoftPointer
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSoftObjectPtr<UStaticMesh> ProjectileMesh;
+};
+
+//Projectile Tag
+USTRUCT()
+struct FProjectileTag : public FMassTag
+{
+	GENERATED_BODY()
 };
 
 

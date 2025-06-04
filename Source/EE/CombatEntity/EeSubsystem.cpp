@@ -6,9 +6,10 @@
 #include "CombatFragments.h"
 #include "MassCommandBuffer.h"
 #include "MassCommonFragments.h"
+#include "MassEntityBuilder.h"
 #include "MassEntitySubsystem.h"
-#include "ToolContextInterfaces.h"
-
+#include "Components/InstancedStaticMeshComponent.h"
+#include "MassEntityUtils.h"
 
 void UEeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -19,7 +20,9 @@ void UEeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	
 	EntityHandleGrid = TMap<int32, FEntityHandleGridCellY>();
 	EeEntityManager = &GetWorld()->GetSubsystem<UMassEntitySubsystem>()->GetMutableEntityManager();
-
+	UE::Mass::FEntityBuilder Builder(*EeEntityManager);
+	EntityBuilder = &Builder;
+	
 	// In here you can hook to delegates!
 	// ie: OnFireHandle = FExample::OnFireDelegate.AddUObject(this, &UMyWorldSubsystem::OnFire);
 }
@@ -102,6 +105,7 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Area, int32 Team)
 		{
 			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,200.f));
 		}
+		SpawnProjectile(AttackTarget);
 	}
 	
 	return true;
@@ -111,9 +115,53 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Area, int32 Team)
 bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
 {
 	TArray<FMassEntityHandle> EntitiesProjectiles;
-	const UScriptStruct* FragmentTypes[] = { FTransformFragment::StaticStruct(), FProjectileParams::StaticStruct(), FProjectileFragment::StaticStruct() };
-	const FMassArchetypeHandle ArchetypeHandle = EeEntityManager->CreateArchetype(MakeArrayView(FragmentTypes, 3));
-	EeEntityManager->BatchCreateEntities(ArchetypeHandle, 1, EntitiesProjectiles);
+	//const UScriptStruct* FragmentTypes[] = { FTransformFragment::StaticStruct(), FProjectileParams::StaticStruct(), FProjectileFragment::StaticStruct() };
+	//const FMassArchetypeHandle ArchetypeHandle = EeEntityManager->CreateArchetype(MakeArrayView(FragmentTypes, 3));
+	//EeEntityManager->BatchCreateEntities(ArchetypeHandle, 1, EntitiesProjectiles);
+
+	FProjectileParams ProjectileParams = EeEntityManager->GetConstSharedFragmentDataChecked<FProjectileParams>(Handle);
+	FProjectileVis ProjectileVis = EeEntityManager->GetSharedFragmentDataChecked<FProjectileVis>(Handle);
+
+	UE::Mass::FEntityBuilder Builder(*EeEntityManager);
+	//UE::Mass::FEntityBuilder ProjectileBuilder = UE::Mass::FEntityBuilder(SharedRef);
+	FProjectileParams& ProjectileParamsRef = Builder.Add_GetRef<FProjectileParams>();
+	ProjectileParamsRef = ProjectileParams;
+	FProjectileVis& ProjectileVisRef = Builder.Add_GetRef<FProjectileVis>();
+	ProjectileVisRef = ProjectileVis;
+	FTransform Transform = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(Handle)->GetTransform();
+	Builder.Add_GetRef<FTransformFragment>().GetMutableTransform().SetTranslation(Transform.GetLocation());
+	FProjectileFragment& ProjectileFragment = Builder.Add_GetRef<FProjectileFragment>();
+	ProjectileFragment.Velocity = ProjectileParams.InitialSpeed*ProjectileParams.InitialDirection;
+	UE_LOG(LogTemp, Warning, TEXT("Projectile spawned %s"), *ProjectileFragment.Velocity.ToString());
+	Builder.Add<FProjectileTag>();
+	if (UWorld* World = GetWorld())
+	{
+		if (AWorldSettings* WorldSettings = World->GetWorldSettings())
+		{
+			if (ProjectileMeshComponents.Contains(ProjectileVisRef.ProjectileMeshComponent) == false){
+				UInstancedStaticMeshComponent* NewISM = NewObject<UInstancedStaticMeshComponent>(WorldSettings);
+				NewISM->RegisterComponent();
+				ProjectileMeshComponents.Add(NewISM);
+				ProjectileVisRef.ProjectileMeshComponent = NewISM;
+				NewISM->AddInstance(Transform, true);
+				NewISM->SetStaticMesh(ProjectileVis.ProjectileMesh.LoadSynchronous());
+				NewISM->SetWorldScale3D(FVector(1,1,1));
+				NewISM->SetWorldRotation(FRotator(0,0,0));
+				NewISM->SetWorldLocation(Transform.GetLocation());
+				NewISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				NewISM->SetCollisionObjectType(ECC_WorldStatic);
+				NewISM->SetCollisionResponseToAllChannels(ECR_Ignore);
+				NewISM->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Overlap);
+				NewISM->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
+			}
+			else
+			{
+				ProjectileVisRef.ProjectileMeshComponent->AddInstance(Transform, true);
+			}
+		}
+	}
+	
+	Builder.Commit();
 
 	return true;
 }
