@@ -78,7 +78,7 @@ void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecut
 				}
 				continue;
 			}
-			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*250.f, Loc + FVector::UpVector*-250.f, EE_SPAWNABLE);
+			bool Res = Context.GetWorld()->LineTraceSingleByChannel(OutHit,Loc + FVector::UpVector*10.f, Loc + FVector::UpVector*-250.f, EE_SPAWNABLE);
 			if (Res)
 			{
 				FVector Up = OutHit.ImpactNormal;

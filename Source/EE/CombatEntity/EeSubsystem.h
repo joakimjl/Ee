@@ -17,7 +17,7 @@ struct FGridCellData
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TArray<FMassEntityHandle> Handles;
+	TArray<FMassEntityHandle> Handles = TArray<FMassEntityHandle>();
 };
 
 USTRUCT(BlueprintType)
@@ -26,7 +26,7 @@ struct FEntityHandleGridCellY
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TMap<int32, FGridCellData> InnerMap;
+	TMap<int32, FGridCellData> InnerMap = TMap<int32, FGridCellData>();
 };
 
 UCLASS()
@@ -46,7 +46,7 @@ public:
 	UFUNCTION()
 	TArray<FMassEntityHandle> EntitesAround(FIntVector2 InGrid, int32 SizeAround);
 	UFUNCTION(BlueprintCallable)
-	bool AttackLocation(FVector InLocation, int32 Team);
+	bool AttackLocation(FVector InLocation, int32 Area, int32 Team);
 	
 	//Spawning Projectiles Functions
 	UFUNCTION()
@@ -64,6 +64,8 @@ private:
 	UE_MT_DECLARE_RW_ACCESS_DETECTOR(AccessDetector);
 	UPROPERTY()
 	TMap<int32, FEntityHandleGridCellY> EntityHandleGrid;
+
+	bool DebugEnable = false;
 };
 
 template<>

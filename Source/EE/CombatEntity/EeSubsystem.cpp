@@ -60,46 +60,47 @@ FVector UEeSubsystem::AddSelfToGrid(FMassEntityHandle Handle)
 	if (TransformFrag == nullptr) return FVector::ZeroVector;
 	FVector Location = TransformFrag->GetTransform().GetLocation();
 	FIntVector2 GridVec = VectorToGrid(Location);
-	if (EntityHandleGrid.Contains(GridVec.X))
-	{
-		if (EntityHandleGrid[GridVec.X].InnerMap.Contains(GridVec.Y))
-		{
-			if (EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Contains(Handle)) EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Add(Handle);
-		}
-	}
+	if (!EntityHandleGrid.Contains(GridVec.X)) EntityHandleGrid.Add(GridVec.X, FEntityHandleGridCellY());
+	if (!EntityHandleGrid[GridVec.X].InnerMap.Contains(GridVec.Y)) EntityHandleGrid[GridVec.X].InnerMap.Add(GridVec.Y, FGridCellData());
+	if (!EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Contains(Handle)) EntityHandleGrid[GridVec.X].InnerMap[GridVec.Y].Handles.Add(Handle);
+
 	return Location;
 }
 
 TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 SizeAround)
 {
 	TArray<FMassEntityHandle> Out;
-	for (int32 i = 0; i < SizeAround; i++)
+	for (int32 i = -SizeAround; i <= SizeAround; i++)
 	{
-		for (int32 j = 0; j < SizeAround; j++)
+		for (int32 j = -SizeAround; j <= SizeAround; j++)
 		{
-		TArray<FMassEntityHandle>& Temp = EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
-		for (FMassEntityHandle Handle : Temp)
-		{
-			if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
-		}
-		Out.Append(EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
+			if (!EntityHandleGrid.Contains(InGrid.X+i)) continue;
+			if (!EntityHandleGrid[InGrid.X+i].InnerMap.Contains(InGrid.Y+j)) continue;
+			TArray<FMassEntityHandle>& Temp = EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
+			for (FMassEntityHandle Handle : Temp)
+			{
+				if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
+			}
+			Out.Append(EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
 		}
 	}
+
+	if (DebugEnable) UE_LOG(LogTemp, Warning, TEXT("Found %d entities around"), Out.Num());
 
 	return Out;
 }
 
-bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Team)
+bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Area, int32 Team)
 {
 	FIntVector2 GridLoc = VectorToGrid(InLocation);
-	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, 1);
+	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, Area);
 
 	for (auto AttackTarget : AttackTargets)
 	{
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
 		if (EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget))
 		{
-			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,20.f));
+			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,200.f));
 		}
 	}
 	
