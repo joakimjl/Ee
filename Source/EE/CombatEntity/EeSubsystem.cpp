@@ -110,7 +110,7 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Area, int32 Team)
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
 		if (EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget))
 		{
-			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,200.f));
+			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,10.f));
 		}
 		SpawnProjectile(AttackTarget);
 	}
@@ -171,7 +171,7 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
         Builder.Add_GetRef<FTransformFragment>().GetMutableTransform().SetTranslation(Transform.GetLocation());
         
         FProjectileFragment& ProjectileFragment = Builder.Add_GetRef<FProjectileFragment>();
-        ProjectileFragment.Velocity = ProjectileParams.InitialSpeed * ProjectileParams.InitialDirection * (Transform.GetRotation().Vector()+Transform.GetRotation().GetRightVector()+Transform.GetRotation().GetUpVector());
+        ProjectileFragment.Velocity = ProjectileParams.InitialSpeed * ProjectileParams.InitialDirection * (Transform.GetRotation().Vector()-Transform.GetRotation().GetRightVector()+Transform.GetRotation().GetUpVector());
         
         Builder.Add<FProjectileTag>();
         Builder.Commit();

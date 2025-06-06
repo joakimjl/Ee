@@ -80,6 +80,7 @@ void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecu
 			float TempWeight = 10.f;
 			ProjectileFrag.Velocity = ProjectileFrag.Velocity*(1 - 0.01f*DeltaTime) + TempWeight*FVector(0.f,0.f,-98.f)*DeltaTime;
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*ProjectileFrag.Velocity);
+			if (MutableTransform.GetLocation().Z <= 345.f) MutableTransform.SetLocation(FVector(MutableTransform.GetLocation().X, MutableTransform.GetLocation().Y, 345.f));
 		}
 	});
 }
