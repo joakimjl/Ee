@@ -34,6 +34,10 @@ void UEeSubsystem::Deinitialize()
 	// In here you can unhook from delegates
 	// ie: FExample::OnFireDelegate.Remove(OnFireHandle);
 	EntityHandleGrid.Empty();
+	for (UInstancedStaticMeshComponent* ISM : ProjectileMeshComponents)
+	{
+		ISM->DestroyComponent();
+	}
 	ProjectileMeshComponents.Empty();
 	Super::Deinitialize();
 }
@@ -172,7 +176,7 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
         Builder.Add<FProjectileTag>();
         Builder.Commit();
         
-        UE_LOG(LogTemp, Warning, TEXT("Projectile spawned %s"), *ProjectileFragment.Velocity.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("Projectile spawned %s"), *ProjectileFragment.Velocity.ToString());
         return true;
     }
 
