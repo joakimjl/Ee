@@ -167,7 +167,7 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
         Builder.Add_GetRef<FTransformFragment>().GetMutableTransform().SetTranslation(Transform.GetLocation());
         
         FProjectileFragment& ProjectileFragment = Builder.Add_GetRef<FProjectileFragment>();
-        ProjectileFragment.Velocity = ProjectileParams.InitialSpeed * ProjectileParams.InitialDirection;
+        ProjectileFragment.Velocity = ProjectileParams.InitialSpeed * ProjectileParams.InitialDirection * (Transform.GetRotation().Vector()+Transform.GetRotation().GetRightVector()+Transform.GetRotation().GetUpVector());
         
         Builder.Add<FProjectileTag>();
         Builder.Commit();
