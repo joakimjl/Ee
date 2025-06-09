@@ -11,6 +11,7 @@
 #include "EeNavigationTasks.generated.h"
 
 
+struct FDefenceStatsBase;
 struct FTransformFragment;
 
 namespace UE::MassBehavior
@@ -39,7 +40,7 @@ struct FEeFindRandomLocationInstanceData
 	bool FoundLocation = false;
 };
 
-USTRUCT(meta = (DisplayName = "Find Random Location in Radius"))
+USTRUCT(meta = (DisplayName = "Ee Find Random Location in Radius"))
 struct FEeFindRandomLocationInRadius : public FMassStateTreeTaskBase
 {
 	GENERATED_BODY()
@@ -63,4 +64,37 @@ protected:
 	/** Retry cooldown until checking on ineligible location found */
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	float RetryCooldown = 1.f;
+};
+
+
+USTRUCT()
+struct FEeCheckHealthInstanceData
+{
+	GENERATED_BODY()
+
+	/** Health Amount of Unit */
+	UPROPERTY(VisibleAnywhere, Category = Output)
+	float Health = -1.f;
+};
+
+USTRUCT(meta = (DisplayName = "Ee Check Health of Unit"))
+struct FEeCheckHealth : public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeCheckHealthInstanceData;
+
+	FEeCheckHealth();
+
+protected:
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+	
+	TStateTreeExternalDataHandle<UMassSignalSubsystem> MassSignalSubsystemHandle;
+
+	TStateTreeExternalDataHandle<FDefenceStatsBase> DefenceStatsHandle;
 };

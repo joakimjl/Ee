@@ -3,6 +3,7 @@
 
 #include "EeNavigationTasks.h"
 
+#include "CombatFragments.h"
 #include "Engine/World.h"
 #include "MassStateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
@@ -12,6 +13,7 @@
 #include "MassSignalSubsystem.h"
 
 #include "MassAIBehaviorTypes.h"
+#include "AI/NavigationSystemBase.h"
 
 #define EE_SPAWNABLE  ECC_GameTraceChannel2
 
@@ -47,7 +49,6 @@ EStateTreeRunStatus FEeFindRandomLocationInRadius::EnterState(FStateTreeExecutio
 	FMassTargetLocation WalkToLocation;
 	FVector TargetLocation = TransformFragment.GetTransform().GetLocation() + FVector(FMath::RandRange(-Radius, Radius), FMath::RandRange(-Radius, Radius), 0);
 	FHitResult OutHit = FHitResult();
-
 	if (!World->IsNavigationRebuilt()) return EStateTreeRunStatus::Running;
 	bool Res = World->LineTraceSingleByChannel(OutHit,TargetLocation + FVector::UpVector*1000.f, TargetLocation + FVector::UpVector*-1000.f, EE_SPAWNABLE);
 	if (!Res) return EStateTreeRunStatus::Running;
@@ -96,3 +97,47 @@ void FEeFindRandomLocationInRadius::ExitState(FStateTreeExecutionContext& Contex
 
 }
 
+
+
+
+FEeCheckHealth::FEeCheckHealth()
+{
+	// This task should not react to Enter/ExitState when the state is reselected.
+	bShouldStateChangeOnReselect = false;
+}
+
+bool FEeCheckHealth::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(MassSignalSubsystemHandle);
+	Linker.LinkExternalData(DefenceStatsHandle);
+	return true;
+}
+
+void FEeCheckHealth::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
+{
+	Builder.AddReadWrite(MassSignalSubsystemHandle);
+	Builder.AddReadOnly(DefenceStatsHandle);
+}
+
+EStateTreeRunStatus FEeCheckHealth::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FEeCheckHealth::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	const FDefenceStatsBase& DefenceStats = Context.GetExternalData(DefenceStatsHandle);
+	if (DefenceStats.CurHealth <= -1) return EStateTreeRunStatus::Failed;
+
+	InstanceData.Health = DefenceStats.CurHealth;
+
+	//UE_LOG(LogTemp, Display, TEXT("Found Health %f"), DefenceStats.CurHealth);
+	
+	return EStateTreeRunStatus::Running;
+}
+
+void FEeCheckHealth::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	
+}

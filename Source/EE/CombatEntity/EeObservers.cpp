@@ -4,6 +4,7 @@
 #include "CombatFragments.h"
 #include "EeSubsystem.h"
 #include "MassCommonFragments.h"
+#include "MassCommonTypes.h"
 #include "MassExecutionContext.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
@@ -22,10 +23,13 @@ void UProjectileObserverProcessor::ConfigureQueries(const TSharedRef<FMassEntity
 	EntityQuery.AddConstSharedRequirement<FProjectileParams>(EMassFragmentPresence::All);
 	EntityQuery.AddSharedRequirement<FProjectileVis>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FProjectileTag>(EMassFragmentPresence::All);
+
+	EntityQuery.RegisterWithProcessor(*this);
 }
 
 void UProjectileObserverProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Projectile Tag Observed"));
 	EntityQuery.ForEachEntityChunk(Context, [this](FMassExecutionContext& Context)
 	{
 		TArrayView<FProjectileFragment> ProjectileFragments = Context.GetMutableFragmentView<FProjectileFragment>();
@@ -38,6 +42,64 @@ void UProjectileObserverProcessor::Execute(FMassEntityManager& EntityManager, FM
 			ProjectileVisIn.ProjectileMeshComponent->AddInstance(FTransform(), true);
 			FProjectileFragment& ProjectileFragment = ProjectileFragments[EntityIndex];
 			ProjectileFragment.Velocity = ProjectileParams.InitialSpeed*ProjectileParams.InitialDirection;
+		}
+	});
+}
+
+
+UDamageObserverProcessor::UDamageObserverProcessor()
+: EntityQuery(*this)
+{
+	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
+	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::Movement;
+	//ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
+	bRequiresGameThreadExecution = true;
+}
+
+void UDamageObserverProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
+{
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FDefenceStatsBase>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FDamageFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddTagRequirement<FDamageTag>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
+
+	EntityQuery.RegisterWithProcessor(*this);
+}
+
+void UDamageObserverProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("Damage Tag Observed"));
+	EntityQuery.ForEachEntityChunk(Context, [this](FMassExecutionContext& Context)
+	{
+		FMassEntityManager& EntityManager = Context.GetEntityManagerChecked();
+		TArrayView<FDefenceStatsBase> DefenceStatsBaseArr = Context.GetMutableFragmentView<FDefenceStatsBase>();
+		TArrayView<FTransformFragment> TransformFragments = Context.GetMutableFragmentView<FTransformFragment>();
+		TArrayView<FDamageFragment> DamageFragmentArr = Context.GetMutableFragmentView<FDamageFragment>();
+
+		for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+		{
+			FDefenceStatsBase& DefenceStats = DefenceStatsBaseArr[EntityIndex];
+			FTransform& TransformFragment = TransformFragments[EntityIndex].GetMutableTransform();
+			FDamageFragment& DamageFragment = DamageFragmentArr[EntityIndex];
+			//UE_LOG(LogTemp, Warning, TEXT("Damage Entity"));
+
+			TArray<EDamageType> Keys;
+			DamageFragment.DamageMap.GenerateKeyArray(Keys);
+			for (const auto& Key : Keys)
+			{
+				DefenceStats.CurHealth -= DamageFragment.DamageMap[Key];
+				DamageFragment.DamageMap[Key] = 0;
+			}
+			UE_LOG(LogTemp, Warning, TEXT("Health %f"), DefenceStats.CurHealth);
+			if (DefenceStats.CurHealth <= 0)
+			{
+				DefenceStats.CurHealth = 0;
+				TransformFragment.SetLocation(TransformFragment.GetLocation() + FVector(0.f, 0.f, 50.f));
+				EntityManager.Defer().PushCommand<FMassCommandAddTag<FDeadTag>>(Context.GetEntity(EntityIndex));
+				UE_LOG(LogTemp, Warning, TEXT("Dead Entity"));
+			}
+			EntityManager.Defer().PushCommand<FMassCommandRemoveTag<FDamageTag>>(Context.GetEntity(EntityIndex));
 		}
 	});
 }

@@ -11,6 +11,7 @@ void UDefensiveEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& Build
     BuildContext.RequireFragment<FTransformFragment>();
     BuildContext.AddFragment<FDefenceStatsBase>();
     BuildContext.AddFragment<FCombatFragment>();
+    BuildContext.AddFragment<FDamageFragment>();
 
     FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
 

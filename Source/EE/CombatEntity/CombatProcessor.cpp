@@ -80,7 +80,11 @@ void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecu
 			float TempWeight = 10.f;
 			ProjectileFrag.Velocity = ProjectileFrag.Velocity*(1 - 0.01f*DeltaTime) + TempWeight*FVector(0.f,0.f,-98.f)*DeltaTime;
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*ProjectileFrag.Velocity);
-			if (MutableTransform.GetLocation().Z <= 345.f) MutableTransform.SetLocation(FVector(MutableTransform.GetLocation().X, MutableTransform.GetLocation().Y, 345.f));
+			if (MutableTransform.GetLocation().Z <= 215.f)
+			{
+				MutableTransform.SetLocation(MutableTransform.GetLocation() + FVector(0.f, 0.f, ProjectileFrag.Velocity.Z*+0.5f));
+				ProjectileFrag.Velocity.Z = ProjectileFrag.Velocity.Z*-0.5f;
+			}
 		}
 	});
 }
@@ -90,7 +94,7 @@ UProjectileInstanceUpdateProcessor::UProjectileInstanceUpdateProcessor()
 {
 	bRequiresGameThreadExecution = true;
 	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
-	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::Avoidance;
+	ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::ApplyForces;
 	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
 
 }
@@ -148,6 +152,7 @@ void UDeathPhysicsProcessor::ConfigureQueries(const TSharedRef<FMassEntityManage
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::All);
 }
 
 void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

@@ -216,4 +216,25 @@ struct FProjectileTag : public FMassTag
 	GENERATED_BODY()
 };
 
+USTRUCT()
+struct FDamageFragment : public FMassFragment
+{
+	GENERATED_BODY();
+
+	UPROPERTY()
+	TMap<EDamageType, float> DamageMap = TMap<EDamageType, float>();
+};
+
+USTRUCT()
+struct FDamageTag : public FMassTag
+{
+	GENERATED_BODY()
+};
+
+USTRUCT()
+struct FDeadTag : public FMassTag
+{
+	GENERATED_BODY()
+};
+
 

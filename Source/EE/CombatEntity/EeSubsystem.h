@@ -8,6 +8,7 @@
 
 #include "EeSubsystem.generated.h"
 
+enum class EDamageType : uint8;
 struct FMassEntityHandle;
 struct FMassEntityManager;
 
@@ -46,11 +47,11 @@ public:
 	UFUNCTION()
 	TArray<FMassEntityHandle> EntitesAround(FIntVector2 InGrid, int32 SizeAround);
 	UFUNCTION(BlueprintCallable)
-	bool AttackLocation(FVector InLocation, int32 Area, int32 Team);
+	bool AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team);
 	
 	//Spawning Projectiles Functions
 	UFUNCTION()
-	bool SpawnProjectile(FMassEntityHandle Handle);
+	bool SpawnProjectile(FMassEntityHandle Handle, FVector TargetLocation = FVector::ZeroVector);
 
 	UPROPERTY()
 	TArray<UInstancedStaticMeshComponent*> ProjectileMeshComponents;

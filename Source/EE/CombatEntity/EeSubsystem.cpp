@@ -6,12 +6,17 @@
 #include <functional>
 
 #include "CombatFragments.h"
+#include "GameplayTagContainer.h"
 #include "MassCommandBuffer.h"
 #include "MassCommonFragments.h"
 #include "MassEntityBuilder.h"
 #include "MassEntitySubsystem.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "MassEntityUtils.h"
+#include "MassStateTreeTypes.h"
+#include "MassStateTreeSubsystem.h"
+#include "MassExecutionContext.h"
+#include "MassSignalSubsystem.h"
 
 void UEeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -100,26 +105,41 @@ TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 
 	return Out;
 }
 
-bool UEeSubsystem::AttackLocation(FVector InLocation, int32 Area, int32 Team)
+bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team)
 {
 	FIntVector2 GridLoc = VectorToGrid(InLocation);
-	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, Area);
+	int32 SizeAround = FMath::CeilToInt(Area/200)+1;
+	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, SizeAround);
 
 	for (auto AttackTarget : AttackTargets)
 	{
+		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(AttackTarget);
+		//if (TeamFrag) UE_LOG(LogTemp, Warning, TEXT("Team %d vs %d"), TeamFrag->Team, Team);
+		if (TeamFrag && TeamFrag->Team == Team) continue;
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
-		if (EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget))
+		if (TransformFrag)
 		{
-			TransformFrag->GetMutableTransform().SetLocation(TransformFrag->GetTransform().GetLocation()+FVector(0,0,10.f));
+			if ((TransformFrag->GetTransform().GetLocation()-InLocation).Size() > Area) continue;
+			FDamageFragment* DamageFrag = EeEntityManager->GetFragmentDataPtr<FDamageFragment>(AttackTarget);
+			if (DamageFrag)
+			{
+				if (!DamageFrag->DamageMap.Contains(DamageType)) DamageFrag->DamageMap.Add(DamageType, 0);
+				DamageFrag->DamageMap[DamageType] += Damage;
+				//EeEntityManager->AddTagToEntity(AttackTarget,FDamageTag::StaticStruct());
+				EeEntityManager->Defer().AddTag<FDamageTag>(AttackTarget);
+				//EeEntityManager->Defer().PushCommand<FMassCommandAddTag<FDamageTag>>(AttackTarget);
+				//UE_LOG(LogTemp, Warning, TEXT("Attacked %s"), *TransformFrag->GetTransform().GetLocation().ToString());
+				GetWorld()->GetSubsystem<UMassSignalSubsystem>()->SignalEntity(UE::Mass::Signals::StateTreeActivate,AttackTarget);
+			}
+			SpawnProjectile(AttackTarget, TransformFrag->GetTransform().GetLocation());
 		}
-		SpawnProjectile(AttackTarget);
 	}
 	
 	return true;
 }
 
 
-bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle)
+bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle, FVector TargetLocation)
 {
     FProjectileParams ProjectileParams = EeEntityManager->GetConstSharedFragmentDataChecked<FProjectileParams>(Handle);
     FProjectileVis ProjectileVis = EeEntityManager->GetSharedFragmentDataChecked<FProjectileVis>(Handle);
