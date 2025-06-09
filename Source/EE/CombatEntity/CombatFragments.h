@@ -237,4 +237,18 @@ struct FDeadTag : public FMassTag
 	GENERATED_BODY()
 };
 
+USTRUCT()
+struct FDeadFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Dead")
+	FVector Velocity = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, Category = "Dead")
+	float DeathTime = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Dead")
+	float Weight = 10.f;
+};
 

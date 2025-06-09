@@ -131,7 +131,6 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 				//UE_LOG(LogTemp, Warning, TEXT("Attacked %s"), *TransformFrag->GetTransform().GetLocation().ToString());
 				GetWorld()->GetSubsystem<UMassSignalSubsystem>()->SignalEntity(UE::Mass::Signals::StateTreeActivate,AttackTarget);
 			}
-			SpawnProjectile(AttackTarget, TransformFrag->GetTransform().GetLocation());
 		}
 	}
 	

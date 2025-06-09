@@ -12,6 +12,8 @@ void UDefensiveEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& Build
     BuildContext.AddFragment<FDefenceStatsBase>();
     BuildContext.AddFragment<FCombatFragment>();
     BuildContext.AddFragment<FDamageFragment>();
+    FDeadFragment& DeadFragRef = BuildContext.AddFragment_GetRef<FDeadFragment>();
+    DeadFragRef = DeathFragment;
 
     FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
 

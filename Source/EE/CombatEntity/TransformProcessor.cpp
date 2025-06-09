@@ -32,6 +32,7 @@ void UTransformProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&
 	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformDistChecker>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::None);
 }
 
 void UTransformProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

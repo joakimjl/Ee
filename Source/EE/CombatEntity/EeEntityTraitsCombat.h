@@ -16,6 +16,9 @@ public:
     UPROPERTY(EditAnywhere, Category="Ee")
     FDefenceStatsParams DefenceStatsParams;
 
+    UPROPERTY(EditAnywhere, Category="Ee")
+    FDeadFragment DeathFragment;
+
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };
 

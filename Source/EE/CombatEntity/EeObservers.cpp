@@ -84,20 +84,28 @@ void UDamageObserverProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 			FDamageFragment& DamageFragment = DamageFragmentArr[EntityIndex];
 			//UE_LOG(LogTemp, Warning, TEXT("Damage Entity"));
 
+			float DamageImpulse = 0.f;
+
 			TArray<EDamageType> Keys;
 			DamageFragment.DamageMap.GenerateKeyArray(Keys);
 			for (const auto& Key : Keys)
 			{
 				DefenceStats.CurHealth -= DamageFragment.DamageMap[Key];
+				DamageImpulse += DamageFragment.DamageMap[Key];
 				DamageFragment.DamageMap[Key] = 0;
 			}
-			UE_LOG(LogTemp, Warning, TEXT("Health %f"), DefenceStats.CurHealth);
 			if (DefenceStats.CurHealth <= 0)
 			{
 				DefenceStats.CurHealth = 0;
 				TransformFragment.SetLocation(TransformFragment.GetLocation() + FVector(0.f, 0.f, 50.f));
 				EntityManager.Defer().PushCommand<FMassCommandAddTag<FDeadTag>>(Context.GetEntity(EntityIndex));
-				UE_LOG(LogTemp, Warning, TEXT("Dead Entity"));
+				FDeadFragment* DeadFrag = EntityManager.GetFragmentDataPtr<FDeadFragment>(Context.GetEntity(EntityIndex));
+				//Random X and Y, Z always set amount
+				if (DeadFrag)
+				{
+					DeadFrag->Velocity = FVector(FMath::RandRange(-20.f, 20.f),FMath::RandRange(-20.f, 20.f), 50.f)*(20+DamageImpulse/15);
+				}
+				//UE_LOG(LogTemp, Warning, TEXT("Dead Entity"));
 			}
 			EntityManager.Defer().PushCommand<FMassCommandRemoveTag<FDamageTag>>(Context.GetEntity(EntityIndex));
 		}

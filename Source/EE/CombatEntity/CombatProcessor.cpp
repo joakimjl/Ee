@@ -143,15 +143,13 @@ UDeathPhysicsProcessor::UDeathPhysicsProcessor()
 	: EntityQuery(*this)
 {
 	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
-	ExecutionOrder.ExecuteInGroup = (UE::Mass::ProcessorGroupNames::Movement);
-	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
+	ExecutionOrder.ExecuteInGroup = (UE::Mass::ProcessorGroupNames::ApplyForces);
 }
 
 void UDeathPhysicsProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
-	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FDeadFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::All);
 }
 
@@ -162,12 +160,15 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
 	{
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
-		const TArrayView<FMassMoveTargetFragment> MoveTargetFragArr = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
-		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
+		const TArrayView<FDeadFragment> DeadFragArr = Context.GetMutableFragmentView<FDeadFragment>();
 
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
-			if (true) continue;
+			FTransform& MutableTransform = TransformFragArr[EntityIt].GetMutableTransform();
+			FDeadFragment& DeadFrag = DeadFragArr[EntityIt];
+			DeadFrag.Velocity = DeadFrag.Velocity*(1 - 0.01f*DeltaTime)-DeadFrag.Weight*FVector(0.f, 0.f, 98.f)*DeltaTime;
+			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*DeadFrag.Velocity);
+			MutableTransform.SetRotation((-DeadFrag.Velocity).ToOrientationQuat());
 		}
 	});
 }
