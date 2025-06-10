@@ -121,6 +121,12 @@ void FEeCheckHealth::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuild
 
 EStateTreeRunStatus FEeCheckHealth::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	const FDefenceStatsBase& DefenceStats = Context.GetExternalData(DefenceStatsHandle);
+	if (DefenceStats.CurHealth <= -1) return EStateTreeRunStatus::Failed;
+
+	InstanceData.Health = DefenceStats.CurHealth;
+	
 	return EStateTreeRunStatus::Running;
 }
 
