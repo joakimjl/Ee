@@ -166,7 +166,7 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 		{
 			FTransform& MutableTransform = TransformFragArr[EntityIt].GetMutableTransform();
 			FDeadFragment& DeadFrag = DeadFragArr[EntityIt];
-			DeadFrag.Velocity = DeadFrag.Velocity*(1 - 0.01f*DeltaTime)-DeadFrag.Weight*FVector(0.f, 0.f, 98.f)*DeltaTime;
+			DeadFrag.Velocity = DeadFrag.Velocity*(1 - 0.1f*DeltaTime)-DeadFrag.Weight*FVector(0.f, 0.f, 98.f)*DeltaTime;
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*DeadFrag.Velocity);
 			MutableTransform.SetRotation((-DeadFrag.Velocity).ToOrientationQuat());
 		}

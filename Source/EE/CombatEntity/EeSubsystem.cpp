@@ -105,6 +105,18 @@ TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 
 	return Out;
 }
 
+TArray<FMassEntityHandle> UEeSubsystem::EnemiesAround(FIntVector2 InGrid, int32 SizeAround, int32 Team)
+{
+	TArray<FMassEntityHandle> Entities = EntitesAround(InGrid, SizeAround);
+	TArray<FMassEntityHandle> Out;
+	for (FMassEntityHandle Entity : Entities)
+	{
+		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(Entity);
+		if (TeamFrag && TeamFrag->Team == Team) Out.Add(Entity);
+	}
+	return Out;
+}
+
 bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team)
 {
 	FIntVector2 GridLoc = VectorToGrid(InLocation);
@@ -121,9 +133,15 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 		{
 			if ((TransformFrag->GetTransform().GetLocation()-InLocation).Size() > Area) continue;
 			FDamageFragment* DamageFrag = EeEntityManager->GetFragmentDataPtr<FDamageFragment>(AttackTarget);
+			FVector ImpulseDir = TransformFrag->GetTransform().GetLocation() - InLocation + FVector(0,0,200);
+			FVector ImpulseDirNorm = ImpulseDir.GetSafeNormal();
+			float ImpulseSize = 100+ImpulseDir.Size()/10.f;
 			if (DamageFrag)
 			{
 				if (!DamageFrag->DamageMap.Contains(DamageType)) DamageFrag->DamageMap.Add(DamageType, 0);
+				FVector NewImpulse = ImpulseDirNorm*500.3f*Damage/ImpulseSize;
+				NewImpulse.Z *= 2;
+				DamageFrag->Impulse += NewImpulse;
 				DamageFrag->DamageMap[DamageType] += Damage;
 				//EeEntityManager->AddTagToEntity(AttackTarget,FDamageTag::StaticStruct());
 				EeEntityManager->Defer().AddTag<FDamageTag>(AttackTarget);

@@ -3,14 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatFragments.h"
+#include "EeStructs.h"
 #include "MassNavigationTypes.h"
 #include "MassNavMeshNavigationFragments.h"
 #include "MassStateTreeExecutionContext.h"
 #include "MassStateTreeTypes.h"
+#include "MassEQS/Public/MassEQSTypes.h"
 
 #include "EeNavigationTasks.generated.h"
 
 
+class UEeSubsystem;
 struct FDefenceStatsBase;
 struct FTransformFragment;
 
@@ -67,6 +71,7 @@ protected:
 };
 
 
+
 USTRUCT()
 struct FEeCheckHealthInstanceData
 {
@@ -97,4 +102,41 @@ protected:
 	TStateTreeExternalDataHandle<UMassSignalSubsystem> MassSignalSubsystemHandle;
 
 	TStateTreeExternalDataHandle<FDefenceStatsBase> DefenceStatsHandle;
+};
+
+
+
+
+
+USTRUCT()
+struct FEeCheckForEnemiesInstanceData
+{
+	GENERATED_BODY()
+
+	/** Found Closest Enemy */
+	UPROPERTY(VisibleAnywhere, Category = Output)
+	FEeTargetData TargetData;
+};
+
+USTRUCT(meta = (DisplayName = "Ee Check Health of Unit"))
+struct FEeCheckForEnemies : public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeCheckForEnemiesInstanceData;
+
+	FEeCheckForEnemies();
+
+protected:
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+	
+	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
+
+	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
+	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 };

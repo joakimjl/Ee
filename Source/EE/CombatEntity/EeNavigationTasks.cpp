@@ -4,6 +4,7 @@
 #include "EeNavigationTasks.h"
 
 #include "CombatFragments.h"
+#include "EeSubsystem.h"
 #include "Engine/World.h"
 #include "MassStateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
@@ -144,6 +145,54 @@ EStateTreeRunStatus FEeCheckHealth::Tick(FStateTreeExecutionContext& Context, co
 }
 
 void FEeCheckHealth::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	
+}
+
+
+FEeCheckForEnemies::FEeCheckForEnemies()
+{
+	// This task should not react to Enter/ExitState when the state is reselected.
+	bShouldStateChangeOnReselect = false;
+}
+
+bool FEeCheckForEnemies::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(EeSubsystemHandle);
+	Linker.LinkExternalData(FTransformFragmentHandle);
+	Linker.LinkExternalData(FTeamHandle);
+	return true;
+}
+
+void FEeCheckForEnemies::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
+{
+	Builder.AddReadWrite(EeSubsystemHandle);
+	Builder.AddReadOnly(FTransformFragmentHandle);
+	Builder.AddReadOnly(FTeamHandle);
+}
+
+EStateTreeRunStatus FEeCheckForEnemies::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	UEeSubsystem& EeSubsystem = Context.GetExternalData(EeSubsystemHandle);
+	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
+	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	FIntVector2 GridLoc = EeSubsystem.VectorToGrid(TransformFragment.GetTransform().GetLocation());
+	TArray<FMassEntityHandle> Enemies = EeSubsystem.EnemiesAround(GridLoc, 4, TeamFragment.Team);
+
+	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
+	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
+	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
+	
+	return EStateTreeRunStatus::Running;
+}
+
+void FEeCheckForEnemies::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
 	
 }

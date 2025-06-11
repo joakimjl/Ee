@@ -46,6 +46,8 @@ public:
 	FIntVector2 VectorToGrid(FVector Vec);
 	UFUNCTION()
 	TArray<FMassEntityHandle> EntitesAround(FIntVector2 InGrid, int32 SizeAround);
+	UFUNCTION()
+	TArray<FMassEntityHandle> EnemiesAround(FIntVector2 InGrid, int32 SizeAround, int32 Team);
 	UFUNCTION(BlueprintCallable)
 	bool AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team);
 	
