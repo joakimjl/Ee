@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "CombatFragments.h"
+#include "EeStructs.h"
 #include "GameplayTagContainer.h"
 #include "MassCommandBuffer.h"
 #include "MassCommonFragments.h"
@@ -219,3 +220,13 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle, FVector TargetLocat
 
     return false;
 }
+
+FTransform UEeSubsystem::GetEntityLocation(const FEeTargetData& EntityData)
+{
+	const FTransform Failed = FTransform::Identity; 
+	const FMassEntityHandle Handle = FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial);
+	if (!EeEntityManager->IsEntityValid(Handle)) return Failed;
+	FTransformFragment* TransformFragPtr = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(Handle);
+	if (TransformFragPtr) return TransformFragPtr->GetMutableTransform();
+	return Failed;
+};

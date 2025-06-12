@@ -158,7 +158,6 @@ FEeCheckForEnemies::FEeCheckForEnemies()
 
 bool FEeCheckForEnemies::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkExternalData(EeSubsystemHandle);
 	Linker.LinkExternalData(FTransformFragmentHandle);
 	Linker.LinkExternalData(FTeamHandle);
 	return true;
@@ -166,7 +165,6 @@ bool FEeCheckForEnemies::Link(FStateTreeLinker& Linker)
 
 void FEeCheckForEnemies::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
 {
-	Builder.AddReadWrite(EeSubsystemHandle);
 	Builder.AddReadOnly(FTransformFragmentHandle);
 	Builder.AddReadOnly(FTeamHandle);
 }
@@ -179,20 +177,124 @@ EStateTreeRunStatus FEeCheckForEnemies::EnterState(FStateTreeExecutionContext& C
 EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	UEeSubsystem& EeSubsystem = Context.GetExternalData(EeSubsystemHandle);
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
 	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
 	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
-	FIntVector2 GridLoc = EeSubsystem.VectorToGrid(TransformFragment.GetTransform().GetLocation());
-	TArray<FMassEntityHandle> Enemies = EeSubsystem.EnemiesAround(GridLoc, 4, TeamFragment.Team);
+	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
+	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 4, TeamFragment.Team);
 
 	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
 	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
+	UE_LOG(LogTemp, Display, TEXT("Found Number: %llu with serial: %i enemy at 0 for: %i around was: %i"), Enemies[0].AsNumber(), Enemies[0].SerialNumber, TeamFragment.Team, Enemies.Num());
 	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
 	
 	return EStateTreeRunStatus::Running;
 }
 
 void FEeCheckForEnemies::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	
+}
+
+
+
+
+FEeWalkToEntity::FEeWalkToEntity()
+{
+	bShouldStateChangeOnReselect = true;
+}
+
+bool FEeWalkToEntity::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(FTransformFragmentHandle);
+	Linker.LinkExternalData(FTeamHandle);
+	return true;
+}
+
+void FEeWalkToEntity::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
+{
+	Builder.AddReadOnly(FTransformFragmentHandle);
+	Builder.AddReadOnly(FTeamHandle);
+}
+
+EStateTreeRunStatus FEeWalkToEntity::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
+	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
+	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
+	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 4, TeamFragment.Team);
+	
+	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
+	
+	return EStateTreeRunStatus::Succeeded;
+}
+
+EStateTreeRunStatus FEeWalkToEntity::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	return EStateTreeRunStatus::Running;
+}
+
+void FEeWalkToEntity::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	
+}
+
+
+
+
+FEeAttackTowardsEntity::FEeAttackTowardsEntity()
+{
+	bShouldStateChangeOnReselect = true;
+}
+
+bool FEeAttackTowardsEntity::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(FTransformFragmentHandle);
+	Linker.LinkExternalData(FOffensiveStatsBaseHandle);
+	Linker.LinkExternalData(FOffensiveStatsParamsHandle);
+	Linker.LinkExternalData(FTeamHandle);
+	return true;
+}
+
+void FEeAttackTowardsEntity::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
+{
+	Builder.AddReadOnly(FTransformFragmentHandle);
+	Builder.AddReadOnly(FOffensiveStatsBaseHandle);
+	Builder.AddReadOnly(FOffensiveStatsParamsHandle);
+	Builder.AddReadOnly(FTeamHandle);
+}
+
+EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
+	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
+	const FOffensiveStatsBase& OffensiveStats = Context.GetExternalData(FOffensiveStatsBaseHandle);
+	const FOffensiveStatsParams& OffensiveStatsParams = Context.GetExternalData(FOffensiveStatsParamsHandle);
+	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	FTransform EnemyTransform = EeSubsystem->GetEntityLocation(InstanceData.TargetData);
+	if (EnemyTransform.Equals(FTransform::Identity)) return EStateTreeRunStatus::Failed;
+	FVector OwnLocation = TransformFragment.GetTransform().GetLocation();
+
+	FVector VectorToEnemy = EnemyTransform.GetLocation() - OwnLocation;
+	float Range = OffensiveStatsParams.AttackRange*OffensiveStats.AttackRangeMult;
+	EeSubsystem->AttackLocation(OwnLocation + VectorToEnemy.GetSafeNormal()*Range,
+		OffensiveStatsParams.DamageType,
+		OffensiveStatsParams.AttackDamage*OffensiveStats.AttackDamageMult,
+		OffensiveStatsParams.AttackAoe*OffensiveStats.AttackAoeMult,
+		TeamFragment.Team);
+	
+	return EStateTreeRunStatus::Succeeded;
+}
+
+EStateTreeRunStatus FEeAttackTowardsEntity::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	return EStateTreeRunStatus::Running;
+}
+
+void FEeAttackTowardsEntity::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
 	
 }

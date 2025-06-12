@@ -126,6 +126,8 @@ struct FOffensiveStatsParams : public FMassConstSharedFragment
 	float AttackDamage = 10.f;
 	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackSpeed = 0.75f;
+	UPROPERTY(EditAnywhere, Category = "AttackStat")
+	float AttackAoe = 30.f;
 	
 	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	EDamageType DamageType = EDamageType::Physical;
@@ -139,6 +141,7 @@ struct FOffensiveStatsBase : public FMassFragment
 	float AttackSpeedMult = 1.f;
 	float AttackDamageMult = 1.f;
 	float AttackRangeMult = 1.f;
+	float AttackAoeMult = 1.f;
 	
 };
 
@@ -147,7 +150,17 @@ struct FTeamFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	uint32 Team = -1;
+	FTeamFragment GetValidated() const
+	{
+		FTeamFragment Copy = *this;
+		Copy.Team = FMath::Max(-1, Copy.Team);
+		
+		return Copy;
+	}
+
+	
+	UPROPERTY(EditAnywhere, Category = "Team")
+	int32 Team = -1;
 };
 
 USTRUCT()

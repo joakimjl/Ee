@@ -23,6 +23,22 @@ public:
 };
 
 UCLASS()
+class UAttackTrait : public UMassEntityTraitBase
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(EditAnywhere, Category="Ee")
+    FOffensiveStatsBase OffensiveStatsBase;
+
+    UPROPERTY(EditAnywhere, Category="Ee")
+    FOffensiveStatsParams OffensiveStatsParams;
+
+    virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
+};
+
+UCLASS()
 class UEeEntityTrait : public UMassEntityTraitBase
 {
     GENERATED_BODY()
@@ -30,7 +46,7 @@ class UEeEntityTrait : public UMassEntityTraitBase
 public:
 
     UPROPERTY(EditAnywhere, Category="Ee")
-    int32 InTeam;
+    FTeamFragment InTeam;
 
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };

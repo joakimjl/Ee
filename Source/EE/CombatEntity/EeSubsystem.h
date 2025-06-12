@@ -8,6 +8,7 @@
 
 #include "EeSubsystem.generated.h"
 
+struct FEeTargetData;
 enum class EDamageType : uint8;
 struct FMassEntityHandle;
 struct FMassEntityManager;
@@ -50,6 +51,8 @@ public:
 	TArray<FMassEntityHandle> EnemiesAround(FIntVector2 InGrid, int32 SizeAround, int32 Team);
 	UFUNCTION(BlueprintCallable)
 	bool AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team);
+	UFUNCTION()
+	FTransform GetEntityLocation(const FEeTargetData& EntityData);
 	
 	//Spawning Projectiles Functions
 	UFUNCTION()

@@ -22,10 +22,23 @@ void UDefensiveEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& Build
     BuildContext.AddConstSharedFragment(SharedDefenceParamsFragment);
 }
 
+void UAttackTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
+{
+    BuildContext.RequireFragment<FTransformFragment>();
+    FOffensiveStatsBase& StatsBaseRef = BuildContext.AddFragment_GetRef<FOffensiveStatsBase>();
+    BuildContext.AddFragment<FCombatFragment>();
+
+    FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
+    
+    const FOffensiveStatsParams InsideOffensiveStatsParams = InsideOffensiveStatsParams.GetValidated();
+    const FConstSharedStruct& SharedOffensiveStatsParamsFragment = MassEntityManager.GetOrCreateConstSharedFragment(InsideOffensiveStatsParams);
+    BuildContext.AddConstSharedFragment(SharedOffensiveStatsParamsFragment);
+}
+
 void UEeEntityTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const
 {
     FTeamFragment& TeamFrag = BuildContext.AddFragment_GetRef<FTeamFragment>();
-    TeamFrag.Team = InTeam;
+    TeamFrag = InTeam.GetValidated();
     
     BuildContext.AddFragment<FTransformDistChecker>();
     BuildContext.RequireFragment<FTransformFragment>();

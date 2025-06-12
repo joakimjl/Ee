@@ -118,7 +118,7 @@ struct FEeCheckForEnemiesInstanceData
 	FEeTargetData TargetData;
 };
 
-USTRUCT(meta = (DisplayName = "Ee Check Health of Unit"))
+USTRUCT(meta = (DisplayName = "Ee Check for Enemies"))
 struct FEeCheckForEnemies : public FMassStateTreeTaskBase
 {
 	GENERATED_BODY()
@@ -135,8 +135,87 @@ protected:
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
 	
-	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
+	
 
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
 	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 };
+
+
+
+
+USTRUCT()
+struct FEeWalkToEntityInstanceData
+{
+	GENERATED_BODY()
+
+	/** Enemy to walk towards */
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	FEeTargetData TargetData;
+
+	/** Stop radius */
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	float StopRadius = 50.f;
+};
+
+USTRUCT(meta = (DisplayName = "Ee Walk Towards Entity"))
+struct FEeWalkToEntity : public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeWalkToEntityInstanceData;
+
+	FEeWalkToEntity();
+
+protected:
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+	
+	
+
+	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
+	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
+};
+
+
+
+
+USTRUCT()
+struct FEeAttackTowardsEntityInstanceData
+{
+	GENERATED_BODY()
+
+	/** Enemy Target */
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	FEeTargetData TargetData;
+};
+
+USTRUCT(meta = (DisplayName = "Ee Attack Towards Entity"))
+struct FEeAttackTowardsEntity : public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeAttackTowardsEntityInstanceData;
+
+	FEeAttackTowardsEntity();
+
+protected:
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+	
+	
+
+	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
+	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
+	TStateTreeExternalDataHandle<FOffensiveStatsBase> FOffensiveStatsBaseHandle;
+	TStateTreeExternalDataHandle<FOffensiveStatsParams> FOffensiveStatsParamsHandle;
+};
+
