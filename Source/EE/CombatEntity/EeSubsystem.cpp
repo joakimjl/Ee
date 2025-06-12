@@ -113,7 +113,7 @@ TArray<FMassEntityHandle> UEeSubsystem::EnemiesAround(FIntVector2 InGrid, int32 
 	for (FMassEntityHandle Entity : Entities)
 	{
 		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(Entity);
-		if (TeamFrag && TeamFrag->Team == Team) Out.Add(Entity);
+		if (TeamFrag && TeamFrag->Team != Team) Out.Add(Entity);
 	}
 	return Out;
 }

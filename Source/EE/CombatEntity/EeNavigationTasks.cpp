@@ -178,7 +178,7 @@ EStateTreeRunStatus FEeCheckForEnemies::EnterState(FStateTreeExecutionContext& C
 	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
 	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 8, TeamFragment.Team);
 
-	UE_LOG(LogTemp, Display, TEXT("Found: %i enemies"), Enemies.Num())
+	//UE_LOG(LogTemp, Display, TEXT("Found: %i enemies"), Enemies.Num())
 
 	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
 	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
@@ -197,7 +197,7 @@ EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context
 	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
 	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 4, TeamFragment.Team);
 
-	UE_LOG(LogTemp, Display, TEXT("Found: %i enemies in tick"), Enemies.Num())
+	//UE_LOG(LogTemp, Display, TEXT("Found: %i enemies in tick"), Enemies.Num())
 
 	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
 	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
@@ -246,6 +246,8 @@ EStateTreeRunStatus FEeEntityToMassLocation::EnterState(FStateTreeExecutionConte
 	WalkToLocation.EndOfPathPosition = TargetLocation;
 	WalkToLocation.EndOfPathIntent = EMassMovementAction::Stand;
 	InstanceData.TargetLocation = WalkToLocation;
+
+	UE_LOG(LogTemp, Display, TEXT("Found Location: %s"), *TargetLocation.ToString())
 	
 	return EStateTreeRunStatus::Running;
 }
@@ -255,10 +257,14 @@ EStateTreeRunStatus FEeEntityToMassLocation::Tick(FStateTreeExecutionContext& Co
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
 
+	//UE_LOG(LogTemp, Display, TEXT("Location Ticking"))
+
 	if (InstanceData.TargetData.EntityNumber == 0) return EStateTreeRunStatus::Running;
 
 	FVector TargetLocation = EeSubsystem->GetEntityLocation(InstanceData.TargetData).GetLocation();
 
+	//UE_LOG(LogTemp, Display, TEXT("Found Location: %s"), *TargetLocation.ToString())
+	
 	FMassTargetLocation WalkToLocation;
 	WalkToLocation.EndOfPathPosition = TargetLocation;
 	WalkToLocation.EndOfPathIntent = EMassMovementAction::Stand;

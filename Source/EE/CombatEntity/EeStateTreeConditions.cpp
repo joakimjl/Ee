@@ -3,15 +3,51 @@
 #include "EeStateTreeConditions.h"
 #include "StateTreeExecutionContext.h"
 
+
+#include "CombatFragments.h"
+#include "EeSubsystem.h"
+#include "Engine/World.h"
+#include "MassStateTreeExecutionContext.h"
+#include "StateTreeLinker.h"
+#include "MassStateTreeDependency.h"
+#include "MassStateTreeTypes.h"
+#include "MassCommonFragments.h"
+#include "MassSignalSubsystem.h"
+
+
 bool FEeLocationValidCondition::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	
 	// Check if the location is valid (not zero vector)
-	if (InstanceData.TargetLocation.EndOfPathPosition)
+	if (!InstanceData.TargetLocation.EndOfPathPosition)
 	{
 		return false;
 	}
 	
 	return true;
 }
+
+
+bool FEeDistanceToMassLocation::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(EntityTransformHandle);
+	return true;
+}
+
+bool FEeDistanceToMassLocation::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	const FTransformFragment& TransformFragment = Context.GetExternalData(EntityTransformHandle);
+
+	if (!InstanceData.TargetLocation.EndOfPathPosition.IsSet()) return true;
+	FVector SelfToTarget = TransformFragment.GetTransform().GetLocation() - InstanceData.TargetLocation.EndOfPathPosition.GetValue();
+	
+	if (SelfToTarget.Size() >= InstanceData.Distance)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
