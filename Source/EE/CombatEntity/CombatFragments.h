@@ -117,6 +117,7 @@ struct FOffensiveStatsParams : public FMassConstSharedFragment
 		Copy.AttackRange = FMath::Max(SMALL_NUMBER, AttackRange);
 		Copy.AttackDamage = FMath::Max(SMALL_NUMBER, AttackDamage);
 		Copy.AttackSpeed = FMath::Max(SMALL_NUMBER, AttackSpeed);
+		Copy.AttackAoe = FMath::Max(SMALL_NUMBER, AttackAoe);
 		return Copy;
 	}
 
@@ -138,9 +139,23 @@ struct FOffensiveStatsBase : public FMassFragment
 {
 	GENERATED_BODY()
 
+	FOffensiveStatsBase GetValidated() const
+	{
+		FOffensiveStatsBase Copy = *this;
+		Copy.AttackSpeedMult = FMath::Max(SMALL_NUMBER, Copy.AttackSpeedMult);
+		Copy.AttackDamageMult = FMath::Max(SMALL_NUMBER, Copy.AttackDamageMult);
+		Copy.AttackRangeMult = FMath::Max(SMALL_NUMBER, Copy.AttackRangeMult);
+		Copy.AttackAoeMult = FMath::Max(SMALL_NUMBER, Copy.AttackAoeMult);
+		return Copy;
+	}
+
+	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackSpeedMult = 1.f;
+	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackDamageMult = 1.f;
+	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackRangeMult = 1.f;
+	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackAoeMult = 1.f;
 	
 };

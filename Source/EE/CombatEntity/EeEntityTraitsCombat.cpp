@@ -26,11 +26,12 @@ void UAttackTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, 
 {
     BuildContext.RequireFragment<FTransformFragment>();
     FOffensiveStatsBase& StatsBaseRef = BuildContext.AddFragment_GetRef<FOffensiveStatsBase>();
+    StatsBaseRef = OffensiveStatsBase.GetValidated();
     BuildContext.AddFragment<FCombatFragment>();
 
     FMassEntityManager& MassEntityManager = UE::Mass::Utils::GetEntityManagerChecked(World);
     
-    const FOffensiveStatsParams InsideOffensiveStatsParams = InsideOffensiveStatsParams.GetValidated();
+    const FOffensiveStatsParams InsideOffensiveStatsParams = OffensiveStatsParams.GetValidated();
     const FConstSharedStruct& SharedOffensiveStatsParamsFragment = MassEntityManager.GetOrCreateConstSharedFragment(InsideOffensiveStatsParams);
     BuildContext.AddConstSharedFragment(SharedOffensiveStatsParamsFragment);
 }

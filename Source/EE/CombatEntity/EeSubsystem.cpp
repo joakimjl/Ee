@@ -132,11 +132,13 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
 		if (TransformFrag)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Attacking %f is Distance with area: %f"), (TransformFrag->GetTransform().GetLocation()-InLocation).Size(),Area);
 			if ((TransformFrag->GetTransform().GetLocation()-InLocation).Size() > Area) continue;
 			FDamageFragment* DamageFrag = EeEntityManager->GetFragmentDataPtr<FDamageFragment>(AttackTarget);
 			FVector ImpulseDir = TransformFrag->GetTransform().GetLocation() - InLocation + FVector(0,0,200);
 			FVector ImpulseDirNorm = ImpulseDir.GetSafeNormal();
 			float ImpulseSize = 100+ImpulseDir.Size()/10.f;
+			//UE_LOG(LogTemp, Warning, TEXT("Impulse %s"), *ImpulseDir.ToString());
 			if (DamageFrag)
 			{
 				if (!DamageFrag->DamageMap.Contains(DamageType)) DamageFrag->DamageMap.Add(DamageType, 0);

@@ -185,7 +185,7 @@ EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context
 
 	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
 	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
-	UE_LOG(LogTemp, Display, TEXT("Found Number: %llu with serial: %i enemy at 0 for: %i around was: %i"), Enemies[0].AsNumber(), Enemies[0].SerialNumber, TeamFragment.Team, Enemies.Num());
+	//UE_LOG(LogTemp, Display, TEXT("Found Number: %llu with serial: %i enemy at 0 for: %i around was: %i"), Enemies[0].AsNumber(), Enemies[0].SerialNumber, TeamFragment.Team, Enemies.Num());
 	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
 	
 	return EStateTreeRunStatus::Running;
@@ -285,6 +285,8 @@ EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContex
 		OffensiveStatsParams.AttackDamage*OffensiveStats.AttackDamageMult,
 		OffensiveStatsParams.AttackAoe*OffensiveStats.AttackAoeMult,
 		TeamFragment.Team);
+
+	//UE_LOG(LogTemp, Display, TEXT("Attacked at: %s"), *OwnLocation.ToString());
 	
 	return EStateTreeRunStatus::Succeeded;
 }
