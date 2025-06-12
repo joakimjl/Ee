@@ -28,7 +28,11 @@ struct FEeLocationValidCondition : public FStateTreeConditionBase
 	GENERATED_BODY()
 
 	using FInstanceDataType = FEeLocationValidConditionInstanceData;
+	
+	virtual const UStruct* GetInstanceDataType() const override
+	{
+		return FInstanceDataType::StaticStruct();
+	}
 
-protected:
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
 };
