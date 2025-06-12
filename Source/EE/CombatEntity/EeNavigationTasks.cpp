@@ -171,6 +171,20 @@ void FEeCheckForEnemies::GetDependencies(UE::MassBehavior::FStateTreeDependencyB
 
 EStateTreeRunStatus FEeCheckForEnemies::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
+	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
+	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
+	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 8, TeamFragment.Team);
+
+	UE_LOG(LogTemp, Display, TEXT("Found: %i enemies"), Enemies.Num())
+
+	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
+	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
+	//UE_LOG(LogTemp, Display, TEXT("Found Number: %llu with serial: %i enemy at 0 for: %i around was: %i"), Enemies[0].AsNumber(), Enemies[0].SerialNumber, TeamFragment.Team, Enemies.Num());
+	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
+	
 	return EStateTreeRunStatus::Running;
 }
 
@@ -182,6 +196,8 @@ EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context
 	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
 	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
 	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 4, TeamFragment.Team);
+
+	UE_LOG(LogTemp, Display, TEXT("Found: %i enemies in tick"), Enemies.Num())
 
 	if (Enemies.Num() == 0) return EStateTreeRunStatus::Running;
 	//TODO fix correct transform (not self) and closest enemy target with optimisation in EeSubsystem
@@ -199,44 +215,59 @@ void FEeCheckForEnemies::ExitState(FStateTreeExecutionContext& Context, const FS
 
 
 
-FEeWalkToEntity::FEeWalkToEntity()
+FEeEntityToMassLocation::FEeEntityToMassLocation()
 {
 	bShouldStateChangeOnReselect = true;
 }
 
-bool FEeWalkToEntity::Link(FStateTreeLinker& Linker)
+bool FEeEntityToMassLocation::Link(FStateTreeLinker& Linker)
 {
 	Linker.LinkExternalData(FTransformFragmentHandle);
 	Linker.LinkExternalData(FTeamHandle);
 	return true;
 }
 
-void FEeWalkToEntity::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
+void FEeEntityToMassLocation::GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const
 {
 	Builder.AddReadOnly(FTransformFragmentHandle);
 	Builder.AddReadOnly(FTeamHandle);
 }
 
-EStateTreeRunStatus FEeWalkToEntity::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FEeEntityToMassLocation::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
-	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
-	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
-	FIntVector2 GridLoc = EeSubsystem->VectorToGrid(TransformFragment.GetTransform().GetLocation());
-	TArray<FMassEntityHandle> Enemies = EeSubsystem->EnemiesAround(GridLoc, 4, TeamFragment.Team);
-	
-	InstanceData.TargetData = FEeTargetData(Enemies[0].AsNumber(),Enemies[0].SerialNumber,TransformFragment.GetMutableTransform());
-	
-	return EStateTreeRunStatus::Succeeded;
-}
 
-EStateTreeRunStatus FEeWalkToEntity::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
-{
+	if (InstanceData.TargetData.EntityNumber == 0) return EStateTreeRunStatus::Running;
+
+	FVector TargetLocation = EeSubsystem->GetEntityLocation(InstanceData.TargetData).GetLocation();
+
+	FMassTargetLocation WalkToLocation;
+	WalkToLocation.EndOfPathPosition = TargetLocation;
+	WalkToLocation.EndOfPathIntent = EMassMovementAction::Stand;
+	InstanceData.TargetLocation = WalkToLocation;
+	
 	return EStateTreeRunStatus::Running;
 }
 
-void FEeWalkToEntity::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FEeEntityToMassLocation::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	UEeSubsystem* EeSubsystem = Context.GetWorld()->GetSubsystem<UEeSubsystem>();
+
+	if (InstanceData.TargetData.EntityNumber == 0) return EStateTreeRunStatus::Running;
+
+	FVector TargetLocation = EeSubsystem->GetEntityLocation(InstanceData.TargetData).GetLocation();
+
+	FMassTargetLocation WalkToLocation;
+	WalkToLocation.EndOfPathPosition = TargetLocation;
+	WalkToLocation.EndOfPathIntent = EMassMovementAction::Stand;
+	InstanceData.TargetLocation = WalkToLocation;
+	
+	return EStateTreeRunStatus::Running;
+}
+
+void FEeEntityToMassLocation::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
 	
 }

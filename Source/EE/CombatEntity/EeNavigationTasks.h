@@ -145,7 +145,7 @@ protected:
 
 
 USTRUCT()
-struct FEeWalkToEntityInstanceData
+struct FEeEntityToMassLocationInstanceData
 {
 	GENERATED_BODY()
 
@@ -153,19 +153,19 @@ struct FEeWalkToEntityInstanceData
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	FEeTargetData TargetData;
 
-	/** Stop radius */
-	UPROPERTY(VisibleAnywhere, Category = Input)
-	float StopRadius = 50.f;
+	/** Enemy's Location */
+	UPROPERTY(VisibleAnywhere, Category = Output)
+	FMassTargetLocation TargetLocation;
 };
 
-USTRUCT(meta = (DisplayName = "Ee Walk Towards Entity"))
-struct FEeWalkToEntity : public FMassStateTreeTaskBase
+USTRUCT(meta = (DisplayName = "Ee Finds Location of Entity"))
+struct FEeEntityToMassLocation : public FMassStateTreeTaskBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FEeWalkToEntityInstanceData;
+	using FInstanceDataType = FEeEntityToMassLocationInstanceData;
 
-	FEeWalkToEntity();
+	FEeEntityToMassLocation();
 
 protected:
 	virtual bool Link(FStateTreeLinker& Linker) override;
