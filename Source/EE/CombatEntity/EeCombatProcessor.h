@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Runtime/MassEntity/Public/MassProcessor.h"
-#include "CombatProcessor.generated.h"
+#include "EeCombatProcessor.generated.h"
 
 /**
  * 

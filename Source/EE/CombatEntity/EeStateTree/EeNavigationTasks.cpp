@@ -3,8 +3,8 @@
 
 #include "EeNavigationTasks.h"
 
-#include "CombatFragments.h"
-#include "EeSubsystem.h"
+#include "../EeCombatFragments.h"
+#include "../EeSubsystem.h"
 #include "Engine/World.h"
 #include "MassStateTreeExecutionContext.h"
 #include "StateTreeLinker.h"

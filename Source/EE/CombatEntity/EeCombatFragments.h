@@ -6,7 +6,7 @@
 #include "MassEntityTypes.h"
 #include "MassEntityElementTypes.h"
 
-#include "CombatFragments.generated.h"
+#include "EeCombatFragments.generated.h"
 
 
 UENUM(BlueprintType)
@@ -14,8 +14,6 @@ enum class ECombatState : uint8
 {
 	Idle,
 	Attacking,
-	Defending,
-	Casting,
 	Moving,
 	Dead
 };

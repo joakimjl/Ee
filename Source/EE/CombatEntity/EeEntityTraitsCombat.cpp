@@ -2,7 +2,7 @@
 
 #include "EeEntityTraitsCombat.h"
 
-#include "CombatFragments.h"
+#include "EeCombatFragments.h"
 #include "MassCommonFragments.h"
 #include "MassEntityTemplateRegistry.h"
 

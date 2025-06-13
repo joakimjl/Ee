@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include "CombatFragments.h"
+#include "EeCombatFragments.h"
 #include "EeStructs.h"
 #include "GameplayTagContainer.h"
 #include "MassCommandBuffer.h"

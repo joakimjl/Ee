@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CombatFragments.h"
-#include "EeStructs.h"
+#include "../EeCombatFragments.h"
+#include "../EeStructs.h"
 #include "MassNavigationTypes.h"
 #include "MassNavMeshNavigationFragments.h"
 #include "MassStateTreeExecutionContext.h"

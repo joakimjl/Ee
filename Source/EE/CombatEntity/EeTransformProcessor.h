@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Runtime/MassEntity/Public/MassProcessor.h"
-#include "TransformProcessor.generated.h"
+#include "EeTransformProcessor.generated.h"
 
 /**
  * 

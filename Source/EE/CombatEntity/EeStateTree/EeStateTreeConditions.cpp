@@ -3,16 +3,9 @@
 #include "EeStateTreeConditions.h"
 #include "StateTreeExecutionContext.h"
 
-
-#include "CombatFragments.h"
-#include "EeSubsystem.h"
 #include "Engine/World.h"
-#include "MassStateTreeExecutionContext.h"
 #include "StateTreeLinker.h"
-#include "MassStateTreeDependency.h"
-#include "MassStateTreeTypes.h"
 #include "MassCommonFragments.h"
-#include "MassSignalSubsystem.h"
 
 
 bool FEeLocationValidCondition::TestCondition(FStateTreeExecutionContext& Context) const

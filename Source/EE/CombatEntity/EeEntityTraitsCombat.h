@@ -2,7 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CombatFragments.h"
+#include "EeCombatFragments.h"
 #include "MassEntityTraitBase.h"
 #include "EeEntityTraitsCombat.generated.h"
 

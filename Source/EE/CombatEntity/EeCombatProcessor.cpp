@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "CombatProcessor.h"
+#include "EeCombatProcessor.h"
 
-#include "CombatFragments.h"
+#include "EeCombatFragments.h"
 #include "MassCommandBuffer.h"
 #include "MassExecutionContext.h"
 #include "MassMovementFragments.h"

@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "TransformProcessor.h"
+#include "EeTransformProcessor.h"
 
-#include "CombatFragments.h"
+#include "EeCombatFragments.h"
 #include "EeSubsystem.h"
 #include "EulerTransform.h"
 #include "MassCommandBuffer.h"
