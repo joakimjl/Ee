@@ -6,6 +6,7 @@
 #include "MassCommonFragments.h"
 #include "MassNavigationTypes.h"
 #include "MassStateTreeDependency.h"
+#include "EE/CombatEntity/EeStructs.h"
 #include "EeStateTreeConditions.generated.h"
 
 /**
@@ -41,7 +42,7 @@ struct FEeLocationValidCondition : public FStateTreeConditionBase
 
 
 USTRUCT()
-struct FEeDistanceToMassLocationInstanceData
+struct FEeOutsideRadiusInstanceData
 {
 	GENERATED_BODY()
 
@@ -49,26 +50,83 @@ struct FEeDistanceToMassLocationInstanceData
 	FMassTargetLocation TargetLocation;
 
 	UPROPERTY(EditAnywhere, Category = Input)
-	float CheckedDistance;
+	float Radius;
 
 	UPROPERTY(EditAnywhere, Category = Output)
 	float Distance;
 };
 
-USTRUCT(meta = (DisplayName = "Distance To MassLocation"))
-struct FEeDistanceToMassLocation : public FStateTreeConditionBase
+USTRUCT(meta = (DisplayName = "Outside of Radius from Point"))
+struct FEeOutsideRadius : public FStateTreeConditionBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FEeDistanceToMassLocationInstanceData;
+	using FInstanceDataType = FEeOutsideRadiusInstanceData;
 	
 	virtual const UStruct* GetInstanceDataType() const override
 	{
 		return FInstanceDataType::StaticStruct();
 	}
 
+	UPROPERTY(EditAnywhere, Category = Condition)
+	bool bInvert = false;
+
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
 	virtual bool Link(FStateTreeLinker& Linker) override;
 	TStateTreeExternalDataHandle<FTransformFragment> EntityTransformHandle;
 	//virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+};
+
+
+
+
+
+USTRUCT()
+struct FEeTargetValidInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	FEeTargetData TargetData;
+};
+
+USTRUCT(meta = (DisplayName = "Target Data Valid"))
+struct FEeTargetValid : public FStateTreeConditionBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeTargetValidInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override
+	{
+		return FInstanceDataType::StaticStruct();
+	}
+
+	UPROPERTY(EditAnywhere, Category = Condition)
+	bool bInvert = false;
+
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+};
+
+
+USTRUCT()
+struct FEeFEeNavMeshDoneInstanceData
+{
+	GENERATED_BODY()
+};
+
+USTRUCT(meta = (DisplayName = "Is NavMesh Finished"))
+struct FEeNavMeshDone : public FStateTreeConditionBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeFEeNavMeshDoneInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override
+	{
+		return FInstanceDataType::StaticStruct();
+	}
+
+	UPROPERTY(EditAnywhere, Category = Condition)
+	bool bInvert = false;
+
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
 };

@@ -3,6 +3,7 @@
 #include "EeCombatProcessor.h"
 
 #include "EeCombatFragments.h"
+#include "EeSubsystem.h"
 #include "MassCommandBuffer.h"
 #include "MassExecutionContext.h"
 #include "MassMovementFragments.h"
@@ -151,6 +152,7 @@ void UDeathPhysicsProcessor::ConfigureQueries(const TSharedRef<FMassEntityManage
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FDeadFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FDeadTag>(EMassFragmentPresence::All);
+	EntityQuery.AddSubsystemRequirement<UEeSubsystem>(EMassFragmentAccess::ReadWrite);
 }
 
 void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -161,6 +163,7 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 	{
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		const TArrayView<FDeadFragment> DeadFragArr = Context.GetMutableFragmentView<FDeadFragment>();
+		UEeSubsystem& EeSubsystemIn = Context.GetMutableSubsystemChecked<UEeSubsystem>();
 
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
@@ -169,6 +172,10 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 			DeadFrag.Velocity = DeadFrag.Velocity*(1 - 0.1f*DeltaTime)-DeadFrag.Weight*FVector(0.f, 0.f, 98.f)*DeltaTime;
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*DeadFrag.Velocity);
 			MutableTransform.SetRotation((-DeadFrag.Velocity).ToOrientationQuat());
+			if (MutableTransform.GetLocation().Z <= -215.f)
+			{
+				EeSubsystemIn.DestroyEntityHandle(Context.GetEntity(EntityIt));
+			}
 		}
 	});
 }

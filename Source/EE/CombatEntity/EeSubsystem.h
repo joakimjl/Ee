@@ -53,6 +53,12 @@ public:
 	bool AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team);
 	UFUNCTION()
 	FTransform GetEntityLocation(const FEeTargetData& EntityData);
+	UFUNCTION()
+	bool EntityIsValid(const FEeTargetData& EntityData);
+	UFUNCTION()
+	bool DestroyEntityWithData(const FEeTargetData& EntityData);
+	UFUNCTION()
+	void DestroyEntityHandle(const FMassEntityHandle& Handle);
 	
 	//Spawning Projectiles Functions
 	UFUNCTION()

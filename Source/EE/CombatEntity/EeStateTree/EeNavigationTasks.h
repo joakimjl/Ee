@@ -14,6 +14,12 @@
 #include "EeNavigationTasks.generated.h"
 
 
+/**
+ * Information about StateTreeTasks mainly found in
+ * @see FMassStateTreeTaskBase
+ * or @see FStateTreeTaskBase
+ */
+
 class UEeSubsystem;
 struct FDefenceStatsBase;
 struct FTransformFragment;
@@ -23,9 +29,7 @@ namespace UE::MassBehavior
 	struct FStateTreeDependencyBuilder;
 };
 
-/**
- * Tasks to claim a smart object from search results and release it when done.
- */
+
 USTRUCT()
 struct FEeFindRandomLocationInstanceData
 {
@@ -100,7 +104,7 @@ protected:
 	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
 	
 	TStateTreeExternalDataHandle<UMassSignalSubsystem> MassSignalSubsystemHandle;
-
+	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
 	TStateTreeExternalDataHandle<FDefenceStatsBase> DefenceStatsHandle;
 };
 
@@ -138,6 +142,7 @@ protected:
 	
 
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
+	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
 	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 };
 
@@ -158,7 +163,7 @@ struct FEeEntityToMassLocationInstanceData
 	FMassTargetLocation TargetLocation;
 };
 
-USTRUCT(meta = (DisplayName = "Ee Finds Location of Entity"))
+USTRUCT(meta = (DisplayName = "Ee Find Entity Location"))
 struct FEeEntityToMassLocation : public FMassStateTreeTaskBase
 {
 	GENERATED_BODY()
@@ -171,13 +176,11 @@ protected:
 	virtual bool Link(FStateTreeLinker& Linker) override;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
-	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 	
-	
-
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
+	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
 	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 };
 
@@ -216,6 +219,7 @@ protected:
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
 	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 	TStateTreeExternalDataHandle<FOffensiveStatsBase> FOffensiveStatsBaseHandle;
+	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
 	TStateTreeExternalDataHandle<FOffensiveStatsParams> FOffensiveStatsParamsHandle;
 };
 

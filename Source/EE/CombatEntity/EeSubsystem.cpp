@@ -86,18 +86,19 @@ FVector UEeSubsystem::AddSelfToGrid(FMassEntityHandle Handle)
 TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 SizeAround)
 {
 	TArray<FMassEntityHandle> Out;
+	auto GridCopy = EntityHandleGrid; 
 	for (int32 i = -SizeAround; i <= SizeAround; i++)
 	{
 		for (int32 j = -SizeAround; j <= SizeAround; j++)
 		{
-			if (!EntityHandleGrid.Contains(InGrid.X+i)) continue;
-			if (!EntityHandleGrid[InGrid.X+i].InnerMap.Contains(InGrid.Y+j)) continue;
-			TArray<FMassEntityHandle>& Temp = EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
+			if (!GridCopy.Contains(InGrid.X+i)) continue;
+			if (!GridCopy[InGrid.X+i].InnerMap.Contains(InGrid.Y+j)) continue;
+			TArray<FMassEntityHandle>& Temp = GridCopy[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
 			for (FMassEntityHandle Handle : Temp)
 			{
 				if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
 			}
-			Out.Append(EntityHandleGrid[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
+			Out.Append(GridCopy[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
 		}
 	}
 
@@ -112,6 +113,7 @@ TArray<FMassEntityHandle> UEeSubsystem::EnemiesAround(FIntVector2 InGrid, int32 
 	TArray<FMassEntityHandle> Out;
 	for (FMassEntityHandle Entity : Entities)
 	{
+		if (!EeEntityManager->IsEntityValid(Entity)) continue;
 		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(Entity);
 		if (TeamFrag && TeamFrag->Team != Team) Out.Add(Entity);
 	}
@@ -126,6 +128,7 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 
 	for (auto AttackTarget : AttackTargets)
 	{
+		if (!EeEntityManager->IsEntityValid(AttackTarget)) continue; 
 		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(AttackTarget);
 		//if (TeamFrag) UE_LOG(LogTemp, Warning, TEXT("Team %d vs %d"), TeamFrag->Team, Team);
 		if (TeamFrag && TeamFrag->Team == Team) continue;
@@ -232,3 +235,19 @@ FTransform UEeSubsystem::GetEntityLocation(const FEeTargetData& EntityData)
 	if (TransformFragPtr) return TransformFragPtr->GetMutableTransform();
 	return Failed;
 };
+
+bool UEeSubsystem::EntityIsValid(const  FEeTargetData& EntityData)
+{
+	return EeEntityManager->IsEntityValid(FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial));
+}
+
+bool UEeSubsystem::DestroyEntityWithData(const  FEeTargetData& EntityData)
+{
+	EeEntityManager->Defer().PushCommand<FMassCommandDestroyEntities>(FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial));
+	return true;
+}
+
+void UEeSubsystem::DestroyEntityHandle(const FMassEntityHandle& Handle)
+{
+	EeEntityManager->Defer().PushCommand<FMassCommandDestroyEntities>(Handle);
+}

@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "StateTreeLinker.h"
 #include "MassCommonFragments.h"
+#include "EE/CombatEntity/EeSubsystem.h"
 
 
 bool FEeLocationValidCondition::TestCondition(FStateTreeExecutionContext& Context) const
@@ -13,7 +14,7 @@ bool FEeLocationValidCondition::TestCondition(FStateTreeExecutionContext& Contex
 	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	
 	// Check if the location is valid (not zero vector)
-	if (!InstanceData.TargetLocation.EndOfPathPosition)
+	if (!InstanceData.TargetLocation.EndOfPathPosition.IsSet() || InstanceData.TargetLocation.EndOfPathPosition.GetValue().IsNearlyZero())
 	{
 		return false;
 	}
@@ -22,25 +23,49 @@ bool FEeLocationValidCondition::TestCondition(FStateTreeExecutionContext& Contex
 }
 
 
-bool FEeDistanceToMassLocation::Link(FStateTreeLinker& Linker)
+bool FEeOutsideRadius::Link(FStateTreeLinker& Linker)
 {
 	Linker.LinkExternalData(EntityTransformHandle);
 	return true;
 }
 
-bool FEeDistanceToMassLocation::TestCondition(FStateTreeExecutionContext& Context) const
+bool FEeOutsideRadius::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	const FTransformFragment& TransformFragment = Context.GetExternalData(EntityTransformHandle);
 
-	if (!InstanceData.TargetLocation.EndOfPathPosition.IsSet()) return true;
+	//if (!InstanceData.TargetLocation.EndOfPathPosition.IsSet()) return true;
 	FVector SelfToTarget = TransformFragment.GetTransform().GetLocation() - InstanceData.TargetLocation.EndOfPathPosition.GetValue();
-	
-	if (SelfToTarget.Size() >= InstanceData.Distance)
+
+	float DistanceToTarget = SelfToTarget.Size();
+
+	if (bInvert)
 	{
+		//IE is inside radius
+		if (DistanceToTarget < InstanceData.Radius)
+		{
+			return true;
+		}
 		return false;
 	}
-	
-	return true;
+	if (DistanceToTarget >= InstanceData.Radius)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool FEeTargetValid::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+
+	bool IsValid = Context.GetWorld()->GetSubsystem<UEeSubsystem>()->EntityIsValid(InstanceData.TargetData)^bInvert;
+
+	return IsValid;
+}
+
+bool FEeNavMeshDone::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	return Context.GetWorld()->IsNavigationRebuilt() ^bInvert;
 }
 
