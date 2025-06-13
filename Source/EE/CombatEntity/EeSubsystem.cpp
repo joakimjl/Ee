@@ -96,9 +96,8 @@ TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 
 			TArray<FMassEntityHandle>& Temp = GridCopy[InGrid.X+i].InnerMap[InGrid.Y+j].Handles;
 			for (FMassEntityHandle Handle : Temp)
 			{
-				if (!EeEntityManager->IsEntityValid(Handle)) Temp.Remove(Handle);
+				if (EeEntityManager->IsEntityValid(Handle)) Out.Add(Handle);
 			}
-			Out.Append(GridCopy[InGrid.X+i].InnerMap[InGrid.Y+j].Handles);
 		}
 	}
 
@@ -243,11 +242,14 @@ bool UEeSubsystem::EntityIsValid(const  FEeTargetData& EntityData)
 
 bool UEeSubsystem::DestroyEntityWithData(const  FEeTargetData& EntityData)
 {
-	EeEntityManager->Defer().PushCommand<FMassCommandDestroyEntities>(FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial));
+	FMassEntityHandle Handle = FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial);
+	if (!EeEntityManager->IsEntityValid(Handle)) return false;
+	EeEntityManager->Defer().PushCommand<FMassCommandDestroyEntities>(Handle);
 	return true;
 }
 
 void UEeSubsystem::DestroyEntityHandle(const FMassEntityHandle& Handle)
 {
+	if (!EeEntityManager->IsEntityValid(Handle)) return;
 	EeEntityManager->Defer().PushCommand<FMassCommandDestroyEntities>(Handle);
 }
