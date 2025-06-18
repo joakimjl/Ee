@@ -134,7 +134,7 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
 		if (TransformFrag)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Attacking %f is Distance with area: %f"), (TransformFrag->GetTransform().GetLocation()-InLocation).Size(),Area);
+			//UE_LOG(LogTemp, Warning, TEXT("Attacking %f is Distance with area: %f"), (TransformFrag->GetTransform().GetLocation()-InLocation).Size(),Area);
 			if ((TransformFrag->GetTransform().GetLocation()-InLocation).Size() > Area) continue;
 			FDamageFragment* DamageFrag = EeEntityManager->GetFragmentDataPtr<FDamageFragment>(AttackTarget);
 			FVector ImpulseDir = TransformFrag->GetTransform().GetLocation() - InLocation + FVector(0,0,200);
@@ -238,6 +238,16 @@ FTransform UEeSubsystem::GetEntityLocation(const FEeTargetData& EntityData)
 bool UEeSubsystem::EntityIsValid(const  FEeTargetData& EntityData)
 {
 	return EeEntityManager->IsEntityValid(FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial));
+}
+
+bool UEeSubsystem::IsEntityAlive(const  FEeTargetData& EntityData)
+{
+	FMassEntityHandle Entity = FMassEntityHandle(EntityData.EntityNumber,EntityData.EntitySerial);
+	if (!EeEntityManager->IsEntityValid(Entity)) return false;
+	FDefenceStatsBase* Stats = EeEntityManager->GetFragmentDataPtr<FDefenceStatsBase>(Entity);
+	if (!Stats) return false;
+	if (Stats->CurHealth <= 0) return false;
+	return true;
 }
 
 bool UEeSubsystem::DestroyEntityWithData(const  FEeTargetData& EntityData)

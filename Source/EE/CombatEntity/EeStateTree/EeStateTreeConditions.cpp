@@ -64,6 +64,15 @@ bool FEeTargetValid::TestCondition(FStateTreeExecutionContext& Context) const
 	return IsValid;
 }
 
+bool FEeIsEntityAlive::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+
+	bool Alive = Context.GetWorld()->GetSubsystem<UEeSubsystem>()->IsEntityAlive(InstanceData.TargetData);
+
+	return Alive;
+}
+
 bool FEeNavMeshDone::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	return Context.GetWorld()->IsNavigationRebuilt() ^bInvert;

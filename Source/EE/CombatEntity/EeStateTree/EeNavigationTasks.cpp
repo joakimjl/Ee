@@ -311,6 +311,8 @@ EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContex
 		OffensiveStatsParams.AttackAoe*OffensiveStats.AttackAoeMult,
 		TeamFragment.Team);
 
+	
+
 	//UE_LOG(LogTemp, Display, TEXT("Attacked at: %s"), *OwnLocation.ToString());
 	
 	return EStateTreeRunStatus::Succeeded;

@@ -109,6 +109,30 @@ struct FEeTargetValid : public FStateTreeConditionBase
 
 
 USTRUCT()
+struct FEeIsEntityAliveInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	FEeTargetData TargetData;
+};
+
+USTRUCT(meta = (DisplayName = "Is Target Alive"))
+struct FEeIsEntityAlive : public FStateTreeConditionBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeIsEntityAliveInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override
+	{
+		return FInstanceDataType::StaticStruct();
+	}
+
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+};
+
+
+USTRUCT()
 struct FEeFEeNavMeshDoneInstanceData
 {
 	GENERATED_BODY()

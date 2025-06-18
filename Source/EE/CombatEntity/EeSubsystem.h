@@ -56,6 +56,8 @@ public:
 	UFUNCTION()
 	bool EntityIsValid(const FEeTargetData& EntityData);
 	UFUNCTION()
+	bool IsEntityAlive(const FEeTargetData& EntityData);
+	UFUNCTION()
 	bool DestroyEntityWithData(const FEeTargetData& EntityData);
 	UFUNCTION()
 	void DestroyEntityHandle(const FMassEntityHandle& Handle);
