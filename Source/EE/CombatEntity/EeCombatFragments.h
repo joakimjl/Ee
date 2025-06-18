@@ -155,7 +155,15 @@ struct FOffensiveStatsBase : public FMassFragment
 	float AttackRangeMult = 1.f;
 	UPROPERTY(EditAnywhere, Category = "AttackStat")
 	float AttackAoeMult = 1.f;
-	
+
+	UPROPERTY()
+	float TimeUntilAttack = 0.f;
+};
+
+USTRUCT()
+struct FHasCooldownTag : public FMassTag
+{
+	GENERATED_BODY()
 };
 
 USTRUCT()

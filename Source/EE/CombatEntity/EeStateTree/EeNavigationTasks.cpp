@@ -296,7 +296,7 @@ EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContex
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UEeSubsystem& EeSubsystem = Context.GetExternalData(EeSubsystemHandle);
 	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
-	const FOffensiveStatsBase& OffensiveStats = Context.GetExternalData(FOffensiveStatsBaseHandle);
+	FOffensiveStatsBase& OffensiveStats = Context.GetExternalData(FOffensiveStatsBaseHandle);
 	const FOffensiveStatsParams& OffensiveStatsParams = Context.GetExternalData(FOffensiveStatsParamsHandle);
 	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
 	FTransform EnemyTransform = EeSubsystem.GetEntityLocation(InstanceData.TargetData);
@@ -311,8 +311,12 @@ EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContex
 		OffensiveStatsParams.AttackAoe*OffensiveStats.AttackAoeMult,
 		TeamFragment.Team);
 
+	const FMassStateTreeExecutionContext& MassStateTreeContext = static_cast<FMassStateTreeExecutionContext&>(Context);
+	FMassEntityHandle Entity = MassStateTreeContext.GetEntity();
+	MassStateTreeContext.GetEntityManager().Defer().AddTag<FHasCooldownTag>(Entity);
+	float TimeUntilAttackInitial = OffensiveStatsParams.AttackSpeed*OffensiveStats.AttackSpeedMult;
+	if (OffensiveStats.TimeUntilAttack <= 0.f) OffensiveStats.TimeUntilAttack = TimeUntilAttackInitial;
 	
-
 	//UE_LOG(LogTemp, Display, TEXT("Attacked at: %s"), *OwnLocation.ToString());
 	
 	return EStateTreeRunStatus::Succeeded;

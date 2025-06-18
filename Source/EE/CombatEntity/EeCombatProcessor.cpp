@@ -26,6 +26,7 @@ void UCombatProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& En
 {
 	EntityQuery.AddConstSharedRequirement<FMassMovementParameters>(EMassFragmentPresence::All);
 	EntityQuery.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FOffensiveStatsBase>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 }
 
@@ -38,6 +39,7 @@ void UCombatProcessor::Execute(FMassEntityManager& EntityManager, FMassExecution
 		
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
 		const TArrayView<FMassMoveTargetFragment> MoveTargetFragArr = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
+		const TArrayView<FMassMoveTargetFragment> OffensiveStatsBase = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
 		const FMassMovementParameters MovementParams = Context.GetConstSharedFragment<FMassMovementParameters>();
 
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
@@ -176,6 +178,42 @@ void UDeathPhysicsProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 			{
 				EeSubsystemIn.DestroyEntityHandle(Context.GetEntity(EntityIt));
 			}
+		}
+	});
+}
+
+
+UAttackCooldownProcessor::UAttackCooldownProcessor()
+	: EntityQuery(*this)
+{
+	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
+	ExecutionOrder.ExecuteInGroup = (UE::Mass::ProcessorGroupNames::Movement);
+	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
+}
+
+void UAttackCooldownProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
+{
+	EntityQuery.AddRequirement<FOffensiveStatsBase>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddConstSharedRequirement<FOffensiveStatsParams>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FHasCooldownTag>(EMassFragmentPresence::All);
+}
+
+void UAttackCooldownProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
+
+	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
+	{
+		const TArrayView<FOffensiveStatsBase> OffensiveStatsBaseArr = Context.GetMutableFragmentView<FOffensiveStatsBase>();
+		const FOffensiveStatsParams OffensiveStatsParams = Context.GetConstSharedFragment<FOffensiveStatsParams>();
+		//UE_LOG(LogTemp, Display, TEXT("Checking cooldown"));
+
+		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
+		{
+			FOffensiveStatsBase& OffensiveStatsBase = OffensiveStatsBaseArr[EntityIt];
+			OffensiveStatsBase.TimeUntilAttack -= DeltaTime;
+			//FMassEntityManager& EntityManager = Context.GetEntityManagerChecked();
+			//if (OffensiveStatsBase.TimeUntilAttack <= 0.f) EntityManager.Defer().RemoveTag<FHasCooldownTag>(Context.GetEntity(EntityIt));
 		}
 	});
 }

@@ -75,3 +75,19 @@ private:
 	FMassEntityQuery EntityQuery;
 };
 
+
+UCLASS()
+class EE_API UAttackCooldownProcessor : public UMassProcessor
+{
+	GENERATED_BODY()
+
+public:
+	UAttackCooldownProcessor();
+
+protected:
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager) override;
+	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
+
+private:
+	FMassEntityQuery EntityQuery;
+};

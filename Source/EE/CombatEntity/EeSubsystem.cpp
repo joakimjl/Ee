@@ -85,6 +85,7 @@ FVector UEeSubsystem::AddSelfToGrid(FMassEntityHandle Handle)
 
 TArray<FMassEntityHandle> UEeSubsystem::EntitesAround(FIntVector2 InGrid, int32 SizeAround)
 {
+	//TODO fix bug where next play crashes if quit happened while unit died
 	TArray<FMassEntityHandle> Out;
 	auto GridCopy = EntityHandleGrid; 
 	for (int32 i = -SizeAround; i <= SizeAround; i++)

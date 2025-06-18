@@ -6,6 +6,8 @@
 #include "Engine/World.h"
 #include "StateTreeLinker.h"
 #include "MassCommonFragments.h"
+#include "MassStateTreeExecutionContext.h"
+#include "EE/CombatEntity/EeCombatFragments.h"
 #include "EE/CombatEntity/EeSubsystem.h"
 
 
@@ -53,6 +55,25 @@ bool FEeOutsideRadius::TestCondition(FStateTreeExecutionContext& Context) const
 		return true;
 	}
 	return false;
+}
+
+
+
+bool FEeAttackReady::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(FOffensiveStatsBaseHandle);
+	return true;
+}
+
+bool FEeAttackReady::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	const FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+
+	const FOffensiveStatsBase& OffensiveStats = Context.GetExternalData(FOffensiveStatsBaseHandle);
+
+	if (OffensiveStats.TimeUntilAttack > 0) return false^bInvert;
+
+	return true^bInvert;
 }
 
 bool FEeTargetValid::TestCondition(FStateTreeExecutionContext& Context) const

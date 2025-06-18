@@ -9,6 +9,7 @@
 #include "EE/CombatEntity/EeStructs.h"
 #include "EeStateTreeConditions.generated.h"
 
+struct FOffensiveStatsBase;
 /**
  * Condition that checks if a target location is valid
  */
@@ -128,6 +129,36 @@ struct FEeIsEntityAlive : public FStateTreeConditionBase
 		return FInstanceDataType::StaticStruct();
 	}
 
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+};
+
+
+
+USTRUCT()
+struct FEeAttackReadyInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	FEeTargetData TargetData;
+};
+
+USTRUCT(meta = (DisplayName = "Is Attack Ready"))
+struct FEeAttackReady : public FStateTreeConditionBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FEeAttackReadyInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override
+	{
+		return FInstanceDataType::StaticStruct();
+	}
+
+	UPROPERTY(EditAnywhere, Category = Condition)
+	bool bInvert = false;
+
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	TStateTreeExternalDataHandle<FOffensiveStatsBase> FOffensiveStatsBaseHandle;
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
 };
 

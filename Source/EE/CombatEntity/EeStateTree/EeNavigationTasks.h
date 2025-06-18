@@ -215,7 +215,6 @@ protected:
 	virtual void GetDependencies(UE::MassBehavior::FStateTreeDependencyBuilder& Builder) const override;
 	
 	
-
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
 	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
 	TStateTreeExternalDataHandle<FOffensiveStatsBase> FOffensiveStatsBaseHandle;
