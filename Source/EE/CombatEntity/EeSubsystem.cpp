@@ -51,8 +51,8 @@ void UEeSubsystem::Deinitialize()
 FIntVector2 UEeSubsystem::VectorToGrid(FVector Vector)
 {
 	FIntVector2 Out;
-	Out.X = FMath::FloorToInt(Vector.X/200);
-	Out.Y = FMath::FloorToInt(Vector.Y/200);
+	Out.X = FMath::FloorToInt(Vector.X/GetGridSize());
+	Out.Y = FMath::FloorToInt(Vector.Y/GetGridSize());
 	return Out;
 }
 
@@ -123,7 +123,7 @@ TArray<FMassEntityHandle> UEeSubsystem::EnemiesAround(FIntVector2 InGrid, int32 
 bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team)
 {
 	FIntVector2 GridLoc = VectorToGrid(InLocation);
-	int32 SizeAround = FMath::CeilToInt(Area/200)+1;
+	int32 SizeAround = FMath::CeilToInt(Area/GetGridSize())+1;
 	TArray<FMassEntityHandle> AttackTargets = EntitesAround(GridLoc, SizeAround);
 
 	for (auto AttackTarget : AttackTargets)

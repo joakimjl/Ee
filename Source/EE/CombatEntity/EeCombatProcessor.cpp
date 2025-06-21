@@ -217,3 +217,70 @@ void UAttackCooldownProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 		}
 	});
 }
+
+
+
+UCollisionProcessor::UCollisionProcessor()
+	: EntityQuery(*this)
+{
+	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
+	ExecutionOrder.ExecuteInGroup = (UE::Mass::ProcessorGroupNames::Avoidance);
+}
+
+void UCollisionProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
+{
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FWeightFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddRequirement<FCollisionFragment>(EMassFragmentAccess::ReadWrite);
+
+	EntityQuery.AddSubsystemRequirement<UEeSubsystem>(EMassFragmentAccess::ReadWrite);
+}
+
+void UCollisionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+{
+	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
+
+	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
+	{
+		UEeSubsystem& EeSubsystem = Context.GetMutableSubsystemChecked<UEeSubsystem>();
+		const TArrayView<FTransformFragment> FTransformFragmentArr = Context.GetMutableFragmentView<FTransformFragment>();
+		const TConstArrayView<FAgentRadiusFragment> AgentRadiusArr = Context.GetFragmentView<FAgentRadiusFragment>();
+		const TConstArrayView<FWeightFragment> WeightArr = Context.GetFragmentView<FWeightFragment>();
+		const TArrayView<FCollisionFragment> CollisionFragmentArr = Context.GetMutableFragmentView<FCollisionFragment>();
+
+		FMassEntityManager& EntityManager = Context.GetEntityManagerChecked();
+
+		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
+		{
+			FTransform& MutableTransform = FTransformFragmentArr[EntityIt].GetMutableTransform();
+			const FAgentRadiusFragment& AgentRadius = AgentRadiusArr[EntityIt];
+			const FWeightFragment& Weight = WeightArr[EntityIt];
+			FIntVector2 GridLoc = EeSubsystem.VectorToGrid(MutableTransform.GetLocation());
+			FCollisionFragment& CollisionFragment = CollisionFragmentArr[EntityIt];
+			TArray<FMassEntityHandle> EntityHandles = CollisionFragment.CollisionEntities;
+			for (FMassEntityHandle EntityHandle : EntityHandles)
+			{
+				if (EntityHandle == Context.GetEntity(EntityIt)) continue;
+				float EntityRadius = EntityManager.GetFragmentDataPtr<FAgentRadiusFragment>(EntityHandle)->Radius;
+				float EntityWeight = EntityManager.GetFragmentDataPtr<FWeightFragment>(EntityHandle)->Weight;
+				FTransform& EntityTransform = EntityManager.GetFragmentDataPtr<FTransformFragment>(EntityHandle)->GetMutableTransform();
+				FVector EntityLocation = EntityTransform.GetLocation();
+				float Distance = FVector::Dist(MutableTransform.GetLocation(), EntityLocation);
+				if (Distance <= AgentRadius.Radius + EntityRadius)
+				{
+					float WeightImpact = FMath::Max(FMath::Min(1.f*(Weight.Weight/EntityWeight),0.01),10.f);
+					WeightImpact *= 10.0f;
+					FVector Push = (EntityLocation - MutableTransform.GetLocation());
+					Push.Z = 0.f;
+					EntityTransform.SetLocation(EntityLocation + Push.GetSafeNormal()*WeightImpact*DeltaTime);
+				}
+			}
+			CollisionFragment.TimerUntilRecheck -= DeltaTime;
+			if (CollisionFragment.TimerUntilRecheck > 0.f) continue;
+			float Random = FMath::RandRange(0.f, 0.3f);
+			CollisionFragment.TimerUntilRecheck = 0.2f+Random;
+			CollisionFragment.CollisionEntities = EeSubsystem.EntitesAround(GridLoc,1+static_cast<int32>(AgentRadius.Radius/EeSubsystem.GetGridSize()));
+		}
+	});
+}

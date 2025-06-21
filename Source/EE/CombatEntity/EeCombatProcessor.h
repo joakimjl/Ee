@@ -91,3 +91,19 @@ protected:
 private:
 	FMassEntityQuery EntityQuery;
 };
+
+UCLASS()
+class EE_API UCollisionProcessor : public UMassProcessor
+{
+	GENERATED_BODY()
+
+public:
+	UCollisionProcessor();
+
+protected:
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager) override;
+	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
+
+private:
+	FMassEntityQuery EntityQuery;
+};

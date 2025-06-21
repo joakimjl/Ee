@@ -45,6 +45,11 @@ public:
 	FVector AddSelfToGrid(FMassEntityHandle Handle);
 	UFUNCTION(BlueprintCallable)
 	FIntVector2 VectorToGrid(FVector Vec);
+	UFUNCTION(BlueprintCallable)
+	static float GetGridSize()
+	{
+		return 250.f;
+	}
 	UFUNCTION()
 	TArray<FMassEntityHandle> EntitesAround(FIntVector2 InGrid, int32 SizeAround);
 	UFUNCTION()

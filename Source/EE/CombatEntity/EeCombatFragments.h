@@ -9,6 +9,8 @@
 #include "EeCombatFragments.generated.h"
 
 
+struct FMassEntityHandle;
+
 UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
@@ -291,3 +293,41 @@ struct FDeadFragment : public FMassFragment
 	float Weight = 10.f;
 };
 
+
+
+USTRUCT()
+struct FWeightFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	FWeightFragment GetValidated() const
+	{
+		FWeightFragment Copy = *this;
+		Copy.Weight = FMath::Max(SMALL_NUMBER, Weight);
+		return Copy;
+	}
+
+	UPROPERTY(EditAnywhere, Category = "Weight")
+	float Weight = 10.f;
+};
+
+
+USTRUCT()
+struct FCollisionFragment : public FMassFragment
+{
+	GENERATED_BODY()
+
+	// FCollisionFragment GetValidated() const
+	// {
+	// 	FCollisionFragment Copy = *this;
+	// 	if (!)
+	// 	Copy.CollisionEntities = FMath::Max(SMALL_NUMBER, Weight);
+	// 	return Copy;
+	// }
+
+	UPROPERTY()
+	float TimerUntilRecheck = 0.f;
+
+	UPROPERTY()
+	TArray<FMassEntityHandle> CollisionEntities = TArray<FMassEntityHandle>();
+};
