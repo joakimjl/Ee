@@ -88,6 +88,18 @@
 		{
 			"Name": "Locomotor",
 			"Enabled": true
+		},
+		{
+			"Name": "ChaosClothAsset",
+			"Enabled": true
+		},
+		{
+			"Name": "ChaosClothAssetEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "TempPluginForFolder",
+			"Enabled": false
 		}
 	]
 }

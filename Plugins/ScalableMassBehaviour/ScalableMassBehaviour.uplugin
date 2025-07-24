@@ -1,0 +1,45 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "ScalableMassBehaviour",
+	"Description": "RTS Support for MassEntity using StateTree",
+	"Category": "Other",
+	"CreatedBy": "Chaunax",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ScalableMassBehaviour",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],"Plugins": [
+	{
+		"Name": "MassGameplay",
+		"Enabled": true
+	},
+	{
+		"Name": "MassAI",
+		"Enabled": true
+	},
+	{
+		"Name": "MassCrowd",
+		"Enabled": true
+	},
+	{
+		"Name": "Niagara",
+		"Enabled": true
+	},
+	{
+		"Name": "StateTree",
+		"Enabled": true
+	}
+]
+}

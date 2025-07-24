@@ -93,12 +93,12 @@ private:
 };
 
 UCLASS()
-class EE_API UCollisionProcessor : public UMassProcessor
+class EE_API UEeCollisionProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
 
 public:
-	UCollisionProcessor();
+	UEeCollisionProcessor();
 
 protected:
 	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager) override;

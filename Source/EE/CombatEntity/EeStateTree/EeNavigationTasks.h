@@ -143,7 +143,7 @@ protected:
 
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
 	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
-	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
+	TStateTreeExternalDataHandle<FEeTeamFragment> FTeamHandle;
 };
 
 
@@ -181,7 +181,7 @@ protected:
 	
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
 	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
-	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
+	TStateTreeExternalDataHandle<FEeTeamFragment> FTeamHandle;
 };
 
 
@@ -216,7 +216,7 @@ protected:
 	
 	
 	TStateTreeExternalDataHandle<FTransformFragment> FTransformFragmentHandle;
-	TStateTreeExternalDataHandle<FTeamFragment> FTeamHandle;
+	TStateTreeExternalDataHandle<FEeTeamFragment> FTeamHandle;
 	TStateTreeExternalDataHandle<FOffensiveStatsBase> FOffensiveStatsBaseHandle;
 	TStateTreeExternalDataHandle<UEeSubsystem> EeSubsystemHandle;
 	TStateTreeExternalDataHandle<FOffensiveStatsParams> FOffensiveStatsParamsHandle;

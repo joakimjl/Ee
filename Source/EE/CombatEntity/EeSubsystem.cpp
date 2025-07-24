@@ -114,13 +114,13 @@ TArray<FMassEntityHandle> UEeSubsystem::EnemiesAround(FIntVector2 InGrid, int32 
 	for (FMassEntityHandle Entity : Entities)
 	{
 		if (!EeEntityManager->IsEntityValid(Entity)) continue;
-		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(Entity);
+		FEeTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FEeTeamFragment>(Entity);
 		if (TeamFrag && TeamFrag->Team != Team) Out.Add(Entity);
 	}
 	return Out;
 }
 
-bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team)
+bool UEeSubsystem::AttackLocation(FVector InLocation, EEeDamageType DamageType, float Damage, float Area, int32 Team)
 {
 	FIntVector2 GridLoc = VectorToGrid(InLocation);
 	int32 SizeAround = FMath::CeilToInt(Area/GetGridSize())+1;
@@ -129,7 +129,7 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 	for (auto AttackTarget : AttackTargets)
 	{
 		if (!EeEntityManager->IsEntityValid(AttackTarget)) continue; 
-		FTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FTeamFragment>(AttackTarget);
+		FEeTeamFragment* TeamFrag = EeEntityManager->GetFragmentDataPtr<FEeTeamFragment>(AttackTarget);
 		//if (TeamFrag) UE_LOG(LogTemp, Warning, TEXT("Team %d vs %d"), TeamFrag->Team, Team);
 		if (TeamFrag && TeamFrag->Team == Team) continue;
 		FTransformFragment* TransformFrag = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(AttackTarget);
@@ -164,8 +164,8 @@ bool UEeSubsystem::AttackLocation(FVector InLocation, EDamageType DamageType, fl
 
 bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle, FVector TargetLocation)
 {
-    FProjectileParams ProjectileParams = EeEntityManager->GetConstSharedFragmentDataChecked<FProjectileParams>(Handle);
-    FProjectileVis ProjectileVis = EeEntityManager->GetSharedFragmentDataChecked<FProjectileVis>(Handle);
+    FEeProjectileParams ProjectileParams = EeEntityManager->GetConstSharedFragmentDataChecked<FEeProjectileParams>(Handle);
+    FEeProjectileVis ProjectileVis = EeEntityManager->GetSharedFragmentDataChecked<FEeProjectileVis>(Handle);
 
     // Find or create the ISM component for this mesh
     UInstancedStaticMeshComponent* TargetISM = nullptr;
@@ -202,21 +202,21 @@ bool UEeSubsystem::SpawnProjectile(FMassEntityHandle Handle, FVector TargetLocat
         TargetISM->AddInstance(FTransform(), false);
         
         UE::Mass::FEntityBuilder Builder(*EeEntityManager);
-        FProjectileParams& ProjectileParamsRef = Builder.Add_GetRef<FProjectileParams>();
+        FEeProjectileParams& ProjectileParamsRef = Builder.Add_GetRef<FEeProjectileParams>();
         ProjectileParamsRef = std::ref(ProjectileParams);
         
         // Update ProjectileVis with the correct ISM
-        FProjectileVis& ProjectileVisRef = Builder.Add_GetRef<FProjectileVis>();
+        FEeProjectileVis& ProjectileVisRef = Builder.Add_GetRef<FEeProjectileVis>();
         ProjectileVisRef = ProjectileVis;
         ProjectileVisRef.ProjectileMeshComponent = TargetISM;  // Use the correct ISM
 
         FTransform Transform = EeEntityManager->GetFragmentDataPtr<FTransformFragment>(Handle)->GetTransform();
         Builder.Add_GetRef<FTransformFragment>().GetMutableTransform().SetTranslation(Transform.GetLocation());
         
-        FProjectileFragment& ProjectileFragment = Builder.Add_GetRef<FProjectileFragment>();
+        FEeProjectileFragment& ProjectileFragment = Builder.Add_GetRef<FEeProjectileFragment>();
         ProjectileFragment.Velocity = ProjectileParams.InitialSpeed * ProjectileParams.InitialDirection * (Transform.GetRotation().Vector()-Transform.GetRotation().GetRightVector()+Transform.GetRotation().GetUpVector());
         
-        Builder.Add<FProjectileTag>();
+        Builder.Add<FEeProjectileTag>();
         Builder.Commit();
         
         //UE_LOG(LogTemp, Warning, TEXT("Projectile spawned %s"), *ProjectileFragment.Velocity.ToString());

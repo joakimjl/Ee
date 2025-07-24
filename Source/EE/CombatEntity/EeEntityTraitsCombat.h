@@ -46,7 +46,7 @@ class UEeEntityTrait : public UMassEntityTraitBase
 public:
 
     UPROPERTY(EditAnywhere, Category="Ee")
-    FTeamFragment InTeam;
+    FEeTeamFragment InTeam;
 
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };
@@ -62,10 +62,10 @@ public:
     int32 InTeam;
 
     UPROPERTY(EditAnywhere, Category="Ee")
-    FProjectileParams ProjectileParams;
+    FEeProjectileParams ProjectileParams;
     
     UPROPERTY(EditAnywhere, Category="Ee")
-    FProjectileVis ProjectileVis;
+    FEeProjectileVis ProjectileVis;
     
     virtual void BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, const UWorld& World) const override;
 };

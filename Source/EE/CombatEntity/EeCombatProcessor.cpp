@@ -60,11 +60,11 @@ UProjectileProcessor::UProjectileProcessor()
 
 void UProjectileProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	EntityQuery.AddConstSharedRequirement<FProjectileParams>(EMassFragmentPresence::All);
-	EntityQuery.AddSharedRequirement<FProjectileVis>(EMassFragmentAccess::ReadWrite);
-	EntityQuery.AddRequirement<FProjectileFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddConstSharedRequirement<FEeProjectileParams>(EMassFragmentPresence::All);
+	EntityQuery.AddSharedRequirement<FEeProjectileVis>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FEeProjectileFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
-	EntityQuery.AddTagRequirement<FProjectileTag>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FEeProjectileTag>(EMassFragmentPresence::All);
 }
 
 void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -74,12 +74,12 @@ void UProjectileProcessor::Execute(FMassEntityManager& EntityManager, FMassExecu
 	EntityQuery.ForEachEntityChunk(Context, [this, DeltaTime](FMassExecutionContext& Context)
 	{
 		const TArrayView<FTransformFragment> TransformFragArr = Context.GetMutableFragmentView<FTransformFragment>();
-		TArrayView<FProjectileFragment> ProjectileFragArr = Context.GetMutableFragmentView<FProjectileFragment>();
+		TArrayView<FEeProjectileFragment> ProjectileFragArr = Context.GetMutableFragmentView<FEeProjectileFragment>();
 		
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
 			FTransform& MutableTransform = TransformFragArr[EntityIt].GetMutableTransform();
-			FProjectileFragment& ProjectileFrag = ProjectileFragArr[EntityIt];
+			FEeProjectileFragment& ProjectileFrag = ProjectileFragArr[EntityIt];
 			float TempWeight = 10.f;
 			ProjectileFrag.Velocity = ProjectileFrag.Velocity*(1 - 0.01f*DeltaTime) + TempWeight*FVector(0.f,0.f,-98.f)*DeltaTime;
 			MutableTransform.SetLocation(MutableTransform.GetLocation() + DeltaTime*ProjectileFrag.Velocity);
@@ -104,9 +104,9 @@ UProjectileInstanceUpdateProcessor::UProjectileInstanceUpdateProcessor()
 
 void UProjectileInstanceUpdateProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	EntityQuery.AddSharedRequirement<FProjectileVis>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddSharedRequirement<FEeProjectileVis>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
-	EntityQuery.AddTagRequirement<FProjectileTag>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FEeProjectileTag>(EMassFragmentPresence::All);
 }
 
 void UProjectileInstanceUpdateProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
@@ -117,7 +117,7 @@ void UProjectileInstanceUpdateProcessor::Execute(FMassEntityManager& EntityManag
 
 	EntityQuery.ForEachEntityChunk(Context, [this, NumPtr](FMassExecutionContext& Context)
 	{
-		FProjectileVis& ProjectileVis = Context.GetMutableSharedFragment<FProjectileVis>();
+		FEeProjectileVis& ProjectileVis = Context.GetMutableSharedFragment<FEeProjectileVis>();
 		TConstArrayView<FTransformFragment> TransformFragArr = Context.GetFragmentView<FTransformFragment>();
         
 		//if (!ProjectileVis.ProjectileMeshComponent || !ProjectileVis.ProjectileMeshComponent->IsValidLowLevel())
@@ -220,14 +220,14 @@ void UAttackCooldownProcessor::Execute(FMassEntityManager& EntityManager, FMassE
 
 
 
-UCollisionProcessor::UCollisionProcessor()
+UEeCollisionProcessor::UEeCollisionProcessor()
 	: EntityQuery(*this)
 {
 	ExecutionFlags = (int32)EProcessorExecutionFlags::AllNetModes;
 	ExecutionOrder.ExecuteInGroup = (UE::Mass::ProcessorGroupNames::Avoidance);
 }
 
-void UCollisionProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
+void UEeCollisionProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
@@ -237,7 +237,7 @@ void UCollisionProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&
 	EntityQuery.AddSubsystemRequirement<UEeSubsystem>(EMassFragmentAccess::ReadWrite);
 }
 
-void UCollisionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
+void UEeCollisionProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
 	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
 

@@ -176,7 +176,7 @@ EStateTreeRunStatus FEeCheckForEnemies::EnterState(FStateTreeExecutionContext& C
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UEeSubsystem& EeSubsystem = Context.GetExternalData(EeSubsystemHandle);
 	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
-	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	const FEeTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
 	FIntVector2 GridLoc = EeSubsystem.VectorToGrid(TransformFragment.GetTransform().GetLocation());
 	TArray<FMassEntityHandle> Enemies = EeSubsystem.EnemiesAround(GridLoc, 8, TeamFragment.Team);
 
@@ -195,7 +195,7 @@ EStateTreeRunStatus FEeCheckForEnemies::Tick(FStateTreeExecutionContext& Context
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UEeSubsystem& EeSubsystem = Context.GetExternalData(EeSubsystemHandle);
 	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
-	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	const FEeTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
 	FIntVector2 GridLoc = EeSubsystem.VectorToGrid(TransformFragment.GetTransform().GetLocation());
 	TArray<FMassEntityHandle> Enemies = EeSubsystem.EnemiesAround(GridLoc, 8, TeamFragment.Team);
 
@@ -298,7 +298,7 @@ EStateTreeRunStatus FEeAttackTowardsEntity::EnterState(FStateTreeExecutionContex
 	FTransformFragment& TransformFragment = Context.GetExternalData(FTransformFragmentHandle);
 	FOffensiveStatsBase& OffensiveStats = Context.GetExternalData(FOffensiveStatsBaseHandle);
 	const FOffensiveStatsParams& OffensiveStatsParams = Context.GetExternalData(FOffensiveStatsParamsHandle);
-	const FTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
+	const FEeTeamFragment& TeamFragment = Context.GetExternalData(FTeamHandle);
 	FTransform EnemyTransform = EeSubsystem.GetEntityLocation(InstanceData.TargetData);
 	if (EnemyTransform.Equals(FTransform::Identity)) return EStateTreeRunStatus::Failed;
 	FVector OwnLocation = TransformFragment.GetTransform().GetLocation();

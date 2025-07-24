@@ -21,7 +21,7 @@ enum class ECombatState : uint8
 };
 
 UENUM(BlueprintType)
-enum class EDamageType : uint8
+enum class EEeDamageType : uint8
 {
 	Physical,
 	Fire,
@@ -131,7 +131,7 @@ struct FOffensiveStatsParams : public FMassConstSharedFragment
 	float AttackAoe = 30.f;
 	
 	UPROPERTY(EditAnywhere, Category = "AttackStat")
-	EDamageType DamageType = EDamageType::Physical;
+	EEeDamageType DamageType = EEeDamageType::Physical;
 };
 
 USTRUCT()
@@ -169,13 +169,13 @@ struct FHasCooldownTag : public FMassTag
 };
 
 USTRUCT()
-struct FTeamFragment : public FMassFragment
+struct FEeTeamFragment : public FMassFragment
 {
 	GENERATED_BODY()
 
-	FTeamFragment GetValidated() const
+	FEeTeamFragment GetValidated() const
 	{
-		FTeamFragment Copy = *this;
+		FEeTeamFragment Copy = *this;
 		Copy.Team = FMath::Max(-1, Copy.Team);
 		
 		return Copy;
@@ -201,7 +201,7 @@ struct FTransformDistChecker : public FMassFragment
 };
 
 USTRUCT()
-struct FProjectileFragment : public FMassFragment
+struct FEeProjectileFragment : public FMassFragment
 {
 	GENERATED_BODY()
 	
@@ -210,13 +210,13 @@ struct FProjectileFragment : public FMassFragment
 
 
 USTRUCT()
-struct FProjectileParams : public FMassConstSharedFragment
+struct FEeProjectileParams : public FMassConstSharedFragment
 {
 	GENERATED_BODY();
 
-	FProjectileParams GetValidated() const
+	FEeProjectileParams GetValidated() const
 	{
-		FProjectileParams Copy = *this;
+		FEeProjectileParams Copy = *this;
 		Copy.InitialSpeed = FMath::Max(0.f,Copy.InitialSpeed);
 		Copy.InitialDirection = Copy.InitialDirection.GetSafeNormal();
 		return Copy;
@@ -230,11 +230,11 @@ struct FProjectileParams : public FMassConstSharedFragment
 
 	
 	UPROPERTY(EditAnywhere, Category = "Projectile")
-	EDamageType DamageType = EDamageType::Physical;
+	EEeDamageType DamageType = EEeDamageType::Physical;
 };
 
 USTRUCT()
-struct FProjectileVis : public FMassSharedFragment
+struct FEeProjectileVis : public FMassSharedFragment
 {
 	GENERATED_BODY();
 
@@ -249,7 +249,7 @@ struct FProjectileVis : public FMassSharedFragment
 
 //Projectile Tag
 USTRUCT()
-struct FProjectileTag : public FMassTag
+struct FEeProjectileTag : public FMassTag
 {
 	GENERATED_BODY()
 };
@@ -260,7 +260,7 @@ struct FDamageFragment : public FMassFragment
 	GENERATED_BODY();
 
 	UPROPERTY()
-	TMap<EDamageType, float> DamageMap = TMap<EDamageType, float>();
+	TMap<EEeDamageType, float> DamageMap = TMap<EEeDamageType, float>();
 	
 	UPROPERTY()
 	FVector Impulse = FVector::ZeroVector;

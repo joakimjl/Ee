@@ -9,7 +9,7 @@
 #include "EeSubsystem.generated.h"
 
 struct FEeTargetData;
-enum class EDamageType : uint8;
+enum class EEeDamageType : uint8;
 struct FMassEntityHandle;
 struct FMassEntityManager;
 
@@ -55,7 +55,7 @@ public:
 	UFUNCTION()
 	TArray<FMassEntityHandle> EnemiesAround(FIntVector2 InGrid, int32 SizeAround, int32 Team);
 	UFUNCTION(BlueprintCallable)
-	bool AttackLocation(FVector InLocation, EDamageType DamageType, float Damage, float Area, int32 Team);
+	bool AttackLocation(FVector InLocation, EEeDamageType DamageType, float Damage, float Area, int32 Team);
 	UFUNCTION()
 	FTransform GetEntityLocation(const FEeTargetData& EntityData);
 	UFUNCTION()
