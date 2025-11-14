@@ -1,1 +1,1 @@
-This repo is currently a bit outdated, as I have since switched to Diversion as my version control.
+This has now been made into a plugin at https://www.fab.com/listings/e6e24564-47af-4cdf-84cd-bbded2c2cb9c
